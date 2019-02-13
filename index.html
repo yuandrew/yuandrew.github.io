@@ -1,69 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Andrew Yuan</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css" integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA" crossorigin="anonymous">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js" integrity="sha384-7aThvCh9TypR7fIc2HV4O/nFMVCBwyIUKL8XCtKE+8xgCgl/PQGuFsvShjr74PBp" crossorigin="anonymous"></script>
+    <link href="css/styles.css" rel="stylesheet" type="text/css">
 </head>
-<body class="vsc-initialized">
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="/">Home</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse" id="navbarsExampleDefault" style="">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/about">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/resume">Résumé</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/projects">Projects</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/blog">Blog</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-                    <div class="dropdown-menu" aria-labelledby="dropdown01">
-                        <a class="dropdown-item" href="/about">About</a>
-                        <a class="dropdown-item" href="/resume">Résumé</a>
-                        <a class="dropdown-item" href="/projects">Projects</a>
-                        <a class="dropdown-item" href="/blog">Blog</a>
-                    </div>
-                </li>
-            </ul>
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
-        </div>
 
-    </nav>
-    <!-- <div class="container">
-        <div class="blurb">
-            <h1>Hi, I'm Andrew Yuan. </h1>
-            <p>Visit my <a href="/about">About page</a> to read me about who I am.</p>
-        </div>
-    </div> -->
-
-
-    <header>
-        <h1>Hi, I'm Andrew Yuan.</h1>
-        <p> This is my website.</p>
-    </header>
-
-    <footer>
+<body>
+<header>
+    <img src="img/logo.png" alt="Andrew Yuan" class="logo">
+    <nav>
         <ul>
-            <li><a href="mailto:yuandrew@umich.edu">Contact Me</a></li>
-            <li><a href="https://github.com/yuandrew">Github</a></li>
+            <li><a href="">Home</a></li>
+            <li><a href="">Résumé</a></li>
+            <li><a href="">Projects</a></li>
+            <li><a href="">Memes</a></li>
         </ul>
-    </footer>
+    </nav>
+</header>
+
+<section class="home-hero parallax--bg">
+    <div class="container">
+        <h1 class="title">Hi, I am Andrew Yuan
+            <span>Welcome to my website.</span>
+        </h1>
+        <a href="" class="button button-accent">See My Work</a>
+    </div>
+</section>
+
+<div class="container">
+    <section class="home-about">
+        <div class="home-about-textbox">
+            <h1>Who I am</h1>
+            <p>Andrew Yuan is a University of Michigan student studying Computer Science</p>
+            <p>This will be <strong>bold</strong>.</p>
+        </div>
+    </section>
+</div>
+
+<section class="cta">
+    <div class="container">
+        <h1 class="title title-cta">Like what you see?
+            <span>Want to work on a project together?</span>
+        </h1>
+        <a href="" class="button button-dark">Contact Me</a>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="col-1">
+            <ul class="unstyled-list">
+                <li><a href="mailto:yuandrew@umich.edu">Contact Me</a></li>
+            </ul>
+        </div>
+        <div class="col-1">
+            <ul class="unstyled-list">
+                <li><a href="https://github.com/yuandrew">Github</a></li>
+            </ul>
+        </div>
+    </div>
+</footer>
+
+<script
+    src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+    crossorigin="anonymous"></script>
+<script src="js/parallax.js"></script>
+
 </body>
 </html>
