@@ -27,20 +27,20 @@ figure {
 
 
 @media (min-width: 37rem) {
-    .port-item {
+    .column {
         width: 50%;
         float: left;
     }
 }
 
 @media (min-width: 60rem) {
-    .port-item {
+    .column {
         width: 33.333334%;
     }
 }
 
 @media (min-width: 100rem) {
-    .port-item {
+    .column {
         width: 25%;
         float: left;
     }
