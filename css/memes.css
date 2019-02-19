@@ -3,3 +3,45 @@
 .memes:hover {
   -webkit-transform: scale(2,2);
 }
+
+
+
+/* portfolio
+=================== */
+.portfolio {
+    margin: 3em 0;
+}
+
+.port-item {
+    margin: 0;
+    position: relative;
+}
+
+.port-item img {
+    display: block;
+}
+
+figure {
+    margin: 0;
+}
+
+
+@media (min-width: 37rem) {
+    .port-item {
+        width: 50%;
+        float: left;
+    }
+}
+
+@media (min-width: 60rem) {
+    .port-item {
+        width: 33.333334%;
+    }
+}
+
+@media (min-width: 100rem) {
+    .port-item {
+        width: 25%;
+        float: left;
+    }
+}
