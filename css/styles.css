@@ -212,8 +212,8 @@ nav a:focus {
 .home-hero {
     background-image: url(../img/cleveland.png);
     background-size: cover;
-    background-position: center;
-    padding: 10em 0;
+    /* background-position: center; */
+    padding: 5em 0;
     color: #FFF;
 }
 
