@@ -135,6 +135,11 @@ function four() {
     integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
     crossorigin="anonymous"></script>
 <script src="js/parallax.js"></script>
+<script>
+    window.onbeforeunload = function () {
+        window.scrollTo(0, 0);
+    }
+</script>
 
 </body>
 </html>
