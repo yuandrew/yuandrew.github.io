@@ -252,7 +252,7 @@ nav a:focus {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    top: .75em;
+    top: .5em;
     background: #232323;
     padding: 0 .145em;
 }
@@ -275,6 +275,7 @@ nav a:focus {
     }
 
     .home-about {
+        /* background-image: url(../img/me.jpg); */
         background-image: url(../img/me.png);
         background-size: cover;
         background-position: center;
