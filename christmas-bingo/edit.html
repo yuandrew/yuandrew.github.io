@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Bingo - Edit Board</title>
+    <link href="../css/bingo.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .user-header {
+            text-align: center;
+        }
+
+        .user-header h1 {
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 20px;
+            height: 30px;
+            margin: 20px auto;
+            max-width: 400px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .bingo-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .bingo-square {
+            aspect-ratio: 1;
+            background: #f8f9fa;
+            border: 3px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bingo-square:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .bingo-square.completed {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .bingo-square.completed::before {
+            content: '✗';
+            position: absolute;
+            font-size: 8em;
+            color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            z-index: 1;
+        }
+
+        .square-content {
+            position: relative;
+            z-index: 2;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .square-number {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            z-index: 3;
+        }
+
+        .bingo-square.completed .square-number {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .challenge-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ffc107;
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-size: 0.6em;
+            font-weight: bold;
+            z-index: 3;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .bingo-board {
+                gap: 5px;
+            }
+
+            .bingo-square {
+                padding: 8px;
+                font-size: 0.75em;
+            }
+
+            .square-content {
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <div class="header-top">
+                <a href="#" id="backLink" class="back-link">← Back to Profile</a>
+            </div>
+
+            <div class="user-header">
+                <h1 id="userName">Loading...</h1>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                    <div class="progress-text" id="progressText">0 / 25</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2>🎄 Your Bingo Board</h2>
+            <p style="color: #666; margin-bottom: 20px;">Click on a square to complete a task!</p>
+            <div id="bingoBoard" class="loading-spinner">
+                Loading board...
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Supabase client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Load config -->
+    <script src="../js/supabase-config.js"></script>
+    <!-- Load edit page logic -->
+    <script src="../js/user-edit.js"></script>
+</body>
+</html>
