@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Bingo - Create Group</title>
+    <link href="../css/bingo.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>🎄 Christmas Bingo</h1>
+        <p class="subtitle">Create a new group to start playing!</p>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="groupName">Group Name/Code</label>
+                <input
+                    type="text"
+                    id="groupName"
+                    name="groupName"
+                    placeholder="Enter a unique group name"
+                    required
+                    pattern="[a-zA-Z0-9_-]+"
+                    title="Only letters, numbers, hyphens, and underscores allowed"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter the group creation password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="button" id="submitButton">
+                Create Group
+            </button>
+        </form>
+
+        <div class="info-box">
+            <strong>Note:</strong> The group name will be used in the URL. Choose something memorable and easy to share with your friends!
+        </div>
+    </div>
+
+    <!-- Load Supabase client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Load config -->
+    <script src="../js/supabase-config.js"></script>
+    <!-- Load registration logic -->
+    <script src="../js/register.js"></script>
+</body>
+</html>
