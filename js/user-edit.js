@@ -38,10 +38,14 @@ const BINGO_TASKS = [
     { text: "CHALLENGE: pose with the coolest Christmas lights (Only top three coolest can X this square)", type: "photo", isChallenge: true }
 ];
 
+const STORAGE_BUCKET = 'bingo-uploads';
+
 let currentUser = null;
 let currentGroupName = null;
 let currentUsername = null;
 let submissions = [];
+let currentTaskIndex = null;
+let currentFile = null;
 
 // Parse URL to get group name and username
 function getPathInfo() {
@@ -108,18 +112,7 @@ async function init() {
         currentUser = user;
 
         // Fetch submissions
-        const { data: userSubmissions, error } = await supabase
-            .from('bingo_submissions')
-            .select('*')
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Error fetching submissions:', error);
-            showError('Failed to load submissions');
-            return;
-        }
-
-        submissions = userSubmissions;
+        await loadSubmissions();
 
         // Render board
         renderBingoBoard();
@@ -129,6 +122,21 @@ async function init() {
         console.error('Error loading user data:', error);
         showError('Failed to load user data');
     }
+}
+
+// Load submissions
+async function loadSubmissions() {
+    const { data: userSubmissions, error } = await supabase
+        .from('bingo_submissions')
+        .select('*')
+        .eq('user_id', currentUser.id);
+
+    if (error) {
+        console.error('Error fetching submissions:', error);
+        throw error;
+    }
+
+    submissions = userSubmissions;
 }
 
 // Render the bingo board
@@ -174,15 +182,376 @@ function updateProgress() {
 
 // Handle square click
 function handleSquareClick(index) {
+    currentTaskIndex = index;
     const task = BINGO_TASKS[index];
     const submission = submissions.find(sub => sub.square_index === index);
 
+    openTaskModal(task, index, submission);
+}
+
+// Open task modal
+function openTaskModal(task, index, submission) {
+    const modal = document.getElementById('taskModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalTaskText = document.getElementById('modalTaskText');
+    const modalTaskType = document.getElementById('modalTaskType');
+    const modalContent = document.getElementById('modalContent');
+
+    // Set title and task text
+    modalTitle.textContent = `Task #${index + 1}`;
+    modalTaskText.textContent = task.text;
+
+    // Set task type badge
+    modalTaskType.textContent = task.type.toUpperCase();
+    modalTaskType.className = `task-type-badge ${task.type}`;
+
+    // Build modal content based on task type and submission status
+    let content = '';
+
     if (submission) {
-        // Square is already completed - show details
-        alert(`This task is already completed!\n\nTask: ${task.text}\n\nNote: Full editing functionality will be available in Stage 3.`);
+        // Task is already completed
+        content = buildExistingSubmissionContent(task, submission);
     } else {
-        // Square is not completed - prompt to complete
-        alert(`Task: ${task.text}\n\nType: ${task.type}\n\nNote: Upload functionality will be available in Stage 3. For now, this is just a preview!`);
+        // Task is not completed yet
+        content = buildNewSubmissionContent(task, index);
+    }
+
+    modalContent.innerHTML = content;
+
+    // Show modal
+    modal.classList.add('show');
+}
+
+// Build content for existing submission
+function buildExistingSubmissionContent(task, submission) {
+    let content = `
+        <div class="submission-info">
+            <div class="submission-info-header">
+                ✓ Task Completed
+            </div>
+            <div>Submitted on ${new Date(submission.created_at).toLocaleDateString()}</div>
+        </div>
+    `;
+
+    if (task.type === 'attestation') {
+        content += `
+            <div class="attestation-section">
+                <div class="attestation-checkbox">
+                    <input type="checkbox" checked disabled>
+                    <span>I have completed this task</span>
+                </div>
+            </div>
+        `;
+    } else if (submission.file_url) {
+        // Show preview of uploaded file
+        if (task.type === 'photo') {
+            content += `
+                <div class="preview-section">
+                    <h3>Your Submission:</h3>
+                    <img src="${escapeHtml(submission.file_url)}" class="preview-media" alt="Submission">
+                </div>
+            `;
+        } else if (task.type === 'video') {
+            content += `
+                <div class="preview-section">
+                    <h3>Your Submission:</h3>
+                    <video src="${escapeHtml(submission.file_url)}" class="preview-media" controls></video>
+                </div>
+            `;
+        }
+    }
+
+    // Add update/remove buttons
+    content += `
+        <div class="modal-actions">
+            <button class="btn-danger" onclick="removeSubmission(${submission.id})">
+                Remove Submission
+            </button>
+            ${task.type !== 'attestation' ? `
+                <button class="btn-secondary" onclick="enableUpdateMode()">
+                    Update File
+                </button>
+            ` : ''}
+            <button class="btn-primary" onclick="closeTaskModal()">
+                Close
+            </button>
+        </div>
+    `;
+
+    return content;
+}
+
+// Build content for new submission
+function buildNewSubmissionContent(task, index) {
+    let content = '';
+
+    if (task.type === 'attestation') {
+        content += `
+            <div class="attestation-section">
+                <div class="attestation-checkbox">
+                    <input type="checkbox" id="attestationCheckbox">
+                    <label for="attestationCheckbox">I have completed this task</label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitAttestation()">Submit</button>
+            </div>
+        `;
+    } else {
+        // Photo or video upload
+        const acceptType = task.type === 'photo' ? 'image/*' : 'video/*';
+        const fileIcon = task.type === 'photo' ? '📷' : '🎥';
+
+        content += `
+            <div class="upload-section" id="uploadSection">
+                <div id="uploadPrompt">
+                    <div style="font-size: 3em; margin-bottom: 15px;">${fileIcon}</div>
+                    <p>Click to upload a ${task.type}</p>
+                    <input type="file" id="fileInput" accept="${acceptType}" onchange="handleFileSelect(event)">
+                    <label for="fileInput" class="upload-button">Choose File</label>
+                </div>
+                <div id="filePreview" style="display: none;">
+                    <div id="previewContainer"></div>
+                    <p id="fileName" style="margin-top: 15px; font-weight: bold;"></p>
+                    <button class="btn-secondary" onclick="clearFileSelection()" style="margin-top: 10px;">
+                        Choose Different File
+                    </button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn-primary" id="submitButton" onclick="submitUpload()" disabled>
+                    Upload & Submit
+                </button>
+            </div>
+        `;
+    }
+
+    return content;
+}
+
+// Handle file selection
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    currentFile = file;
+
+    // Show preview
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const filePreview = document.getElementById('filePreview');
+    const previewContainer = document.getElementById('previewContainer');
+    const fileName = document.getElementById('fileName');
+    const submitButton = document.getElementById('submitButton');
+
+    uploadPrompt.style.display = 'none';
+    filePreview.style.display = 'block';
+    fileName.textContent = file.name;
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const task = BINGO_TASKS[currentTaskIndex];
+        if (task.type === 'photo') {
+            previewContainer.innerHTML = `<img src="${e.target.result}" class="preview-media">`;
+        } else if (task.type === 'video') {
+            previewContainer.innerHTML = `<video src="${e.target.result}" class="preview-media" controls></video>`;
+        }
+    };
+    reader.readAsDataURL(file);
+
+    // Enable submit button
+    submitButton.disabled = false;
+}
+
+// Clear file selection
+function clearFileSelection() {
+    currentFile = null;
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const filePreview = document.getElementById('filePreview');
+    const submitButton = document.getElementById('submitButton');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadPrompt.style.display = 'block';
+    filePreview.style.display = 'none';
+    fileInput.value = '';
+    submitButton.disabled = true;
+}
+
+// Submit attestation
+async function submitAttestation() {
+    const checkbox = document.getElementById('attestationCheckbox');
+    if (!checkbox.checked) {
+        alert('Please check the box to attest that you have completed this task.');
+        return;
+    }
+
+    const task = BINGO_TASKS[currentTaskIndex];
+
+    try {
+        // Insert submission
+        const { data, error } = await supabase
+            .from('bingo_submissions')
+            .insert([{
+                user_id: currentUser.id,
+                square_index: currentTaskIndex,
+                square_text: task.text,
+                submission_type: 'attestation',
+                file_url: null
+            }])
+            .select();
+
+        if (error) throw error;
+
+        // Reload submissions and update UI
+        await loadSubmissions();
+        renderBingoBoard();
+        updateProgress();
+        closeTaskModal();
+
+        alert('Task completed successfully!');
+    } catch (error) {
+        console.error('Error submitting attestation:', error);
+        alert('Failed to submit. Please try again.');
+    }
+}
+
+// Submit upload
+async function submitUpload() {
+    if (!currentFile) {
+        alert('Please select a file first.');
+        return;
+    }
+
+    const submitButton = document.getElementById('submitButton');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Uploading...';
+
+    try {
+        const task = BINGO_TASKS[currentTaskIndex];
+
+        // Generate unique file name
+        const fileExt = currentFile.name.split('.').pop();
+        const fileName = `${currentGroupName}/${currentUsername}/${currentTaskIndex}_${Date.now()}.${fileExt}`;
+
+        // Upload file to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase
+            .storage
+            .from(STORAGE_BUCKET)
+            .upload(fileName, currentFile, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: urlData } = supabase
+            .storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(fileName);
+
+        // Insert submission
+        const { data, error } = await supabase
+            .from('bingo_submissions')
+            .insert([{
+                user_id: currentUser.id,
+                square_index: currentTaskIndex,
+                square_text: task.text,
+                submission_type: task.type,
+                file_url: urlData.publicUrl
+            }])
+            .select();
+
+        if (error) throw error;
+
+        // Reload submissions and update UI
+        await loadSubmissions();
+        renderBingoBoard();
+        updateProgress();
+        closeTaskModal();
+        currentFile = null;
+
+        alert('Task completed successfully!');
+    } catch (error) {
+        console.error('Error submitting upload:', error);
+        alert('Failed to upload. Please try again.');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Upload & Submit';
+    }
+}
+
+// Remove submission
+async function removeSubmission(submissionId) {
+    if (!confirm('Are you sure you want to remove this submission?')) {
+        return;
+    }
+
+    try {
+        // Find the submission
+        const submission = submissions.find(s => s.id === submissionId);
+        if (!submission) return;
+
+        // Delete file from storage if it exists
+        if (submission.file_url) {
+            // Extract file path from URL
+            const urlParts = submission.file_url.split('/');
+            const storageIndex = urlParts.indexOf('storage');
+            if (storageIndex !== -1) {
+                const pathParts = urlParts.slice(storageIndex + 3); // Skip 'storage', 'v1', 'object', 'public', bucket name
+                if (pathParts.length > 1) {
+                    const filePath = pathParts.slice(1).join('/');
+                    await supabase.storage.from(STORAGE_BUCKET).remove([filePath]);
+                }
+            }
+        }
+
+        // Delete submission from database
+        const { error } = await supabase
+            .from('bingo_submissions')
+            .delete()
+            .eq('id', submissionId);
+
+        if (error) throw error;
+
+        // Reload submissions and update UI
+        await loadSubmissions();
+        renderBingoBoard();
+        updateProgress();
+        closeTaskModal();
+
+        alert('Submission removed successfully!');
+    } catch (error) {
+        console.error('Error removing submission:', error);
+        alert('Failed to remove submission. Please try again.');
+    }
+}
+
+// Enable update mode
+function enableUpdateMode() {
+    const task = BINGO_TASKS[currentTaskIndex];
+    const submission = submissions.find(sub => sub.square_index === currentTaskIndex);
+
+    // Remove existing submission and allow new upload
+    if (confirm('Do you want to replace this file with a new one?')) {
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = buildNewSubmissionContent(task, currentTaskIndex);
+    }
+}
+
+// Close task modal
+function closeTaskModal() {
+    const modal = document.getElementById('taskModal');
+    modal.classList.remove('show');
+    currentTaskIndex = null;
+    currentFile = null;
+}
+
+// Close modal when clicking on overlay
+function closeModalOnOverlayClick(event) {
+    if (event.target.id === 'taskModal') {
+        closeTaskModal();
     }
 }
 
