@@ -157,6 +157,28 @@
             margin-top: 8px;
         }
 
+        .copy-link-button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .copy-link-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .copy-link-button:active {
+            transform: translateY(0);
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -246,6 +268,96 @@
 
         .modal-close:hover {
             color: #ccc;
+        }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page-container {
+                margin: 0;
+            }
+
+            .header {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .user-stats {
+                flex-direction: row;
+                gap: 20px;
+            }
+
+            .stat {
+                flex: 1;
+            }
+
+            .stat-value {
+                font-size: 1.5em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .submissions-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .submission-card {
+                padding: 15px;
+            }
+
+            .submission-media img,
+            .submission-media video {
+                height: 250px;
+            }
+
+            .copy-link-button {
+                padding: 12px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .button-primary {
+                padding: 12px 25px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .action-buttons a {
+                display: block;
+                width: 100%;
+                text-align: center;
+            }
+
+            .modal-close {
+                font-size: 30px;
+                top: 10px;
+                right: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.3em;
+            }
+
+            .submission-media img,
+            .submission-media video {
+                height: 200px;
+            }
         }
     </style>
 </head>

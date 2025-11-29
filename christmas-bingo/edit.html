@@ -464,30 +464,122 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page-container {
+                margin: 0;
+            }
+
+            .header {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
             .bingo-board {
                 gap: 5px;
             }
 
             .bingo-square {
                 padding: 8px;
-                font-size: 0.75em;
+                font-size: 0.7em;
+                border-width: 2px;
+                min-height: 80px;
+            }
+
+            .bingo-square:active {
+                transform: scale(0.95);
+                background: #e8e8e8;
             }
 
             .square-content {
-                font-size: 0.7em;
+                font-size: 0.65em;
+                line-height: 1.2;
+            }
+
+            .square-number {
+                font-size: 0.6em;
+                padding: 1px 4px;
+            }
+
+            .challenge-badge {
+                font-size: 0.5em;
+                padding: 1px 4px;
+            }
+
+            .modal-overlay {
+                padding: 10px;
             }
 
             .modal-content {
                 padding: 20px;
                 width: 95%;
+                max-height: 85vh;
+            }
+
+            .modal-header h2 {
+                font-size: 1.3em;
+            }
+
+            .modal-task-text {
+                font-size: 0.9em;
             }
 
             .modal-actions {
                 flex-direction: column;
+                gap: 10px;
             }
 
             .btn-primary, .btn-secondary, .btn-danger {
                 width: 100%;
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .upload-section {
+                padding: 20px;
+            }
+
+            .upload-button {
+                padding: 14px 25px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .preview-media {
+                max-height: 250px;
+            }
+
+            input[type="file"] {
+                font-size: 16px;
+            }
+
+            .progress-bar-container {
+                max-width: 100%;
+            }
+        }
+
+        /* Even smaller screens */
+        @media (max-width: 480px) {
+            .bingo-square {
+                padding: 6px;
+                font-size: 0.65em;
+                min-height: 70px;
+            }
+
+            .square-content {
+                font-size: 0.6em;
+            }
+
+            .bingo-square.completed::before,
+            .bingo-square.pending::before {
+                font-size: 5em;
             }
         }
     </style>

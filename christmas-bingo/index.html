@@ -151,6 +151,85 @@
             color: #333;
             margin-bottom: 20px;
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page-container {
+                margin: 0;
+            }
+
+            .header {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .group-name {
+                font-size: 1em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .leaderboard-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .user-info {
+                width: 100%;
+            }
+
+            .rank {
+                font-size: 1.2em;
+                min-width: 30px;
+            }
+
+            .username {
+                font-size: 0.9em;
+            }
+
+            .score {
+                align-self: flex-end;
+            }
+
+            .button {
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .button-secondary {
+                padding: 12px 25px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            input[type="text"] {
+                font-size: 16px;
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.3em;
+            }
+
+            .leaderboard-item {
+                padding: 12px;
+            }
+        }
     </style>
 </head>
 <body>

@@ -101,12 +101,17 @@ async function init() {
 function renderSubmissions(submissions) {
     const container = document.getElementById('submissionsContainer');
 
-    if (submissions.length === 0) {
+    // Filter out attestations - only show photos and videos
+    const mediaSubmissions = submissions.filter(sub =>
+        sub.submission_type !== 'attestation' && sub.file_url
+    );
+
+    if (mediaSubmissions.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">📝</div>
-                <h3>No Tasks Completed Yet</h3>
-                <p>Start completing tasks to see them here!</p>
+                <h3>No Media Submissions Yet</h3>
+                <p>Upload photos and videos to see them here!</p>
             </div>
         `;
         return;
@@ -114,7 +119,7 @@ function renderSubmissions(submissions) {
 
     let html = '<div class="submissions-grid">';
 
-    submissions.forEach(submission => {
+    mediaSubmissions.forEach(submission => {
         const date = new Date(submission.created_at).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -129,34 +134,29 @@ function renderSubmissions(submissions) {
                 </div>
         `;
 
-        if (submission.submission_type === 'attestation') {
+        if (submission.submission_type === 'photo') {
             html += `
-                <div class="attestation-badge">
-                    ✓ Attested
+                <div class="submission-media">
+                    <img src="${escapeHtml(submission.file_url)}"
+                         alt="Submission"
+                         onclick="openModal('image', '${escapeHtml(submission.file_url)}')">
                 </div>
             `;
-        } else if (submission.file_url) {
-            if (submission.submission_type === 'photo') {
-                html += `
-                    <div class="submission-media">
-                        <img src="${escapeHtml(submission.file_url)}"
-                             alt="Submission"
-                             onclick="openModal('image', '${escapeHtml(submission.file_url)}')">
-                    </div>
-                `;
-            } else if (submission.submission_type === 'video') {
-                html += `
-                    <div class="submission-media">
-                        <video src="${escapeHtml(submission.file_url)}"
-                               onclick="openModal('video', '${escapeHtml(submission.file_url)}')">
-                        </video>
-                    </div>
-                `;
-            }
+        } else if (submission.submission_type === 'video') {
+            html += `
+                <div class="submission-media">
+                    <video src="${escapeHtml(submission.file_url)}"
+                           onclick="openModal('video', '${escapeHtml(submission.file_url)}')">
+                    </video>
+                </div>
+            `;
         }
 
         html += `
                 <div class="submission-date">Completed ${date}</div>
+                <button class="copy-link-button" onclick="copyToClipboard('${escapeHtml(submission.file_url)}', event)">
+                    📋 Copy Link
+                </button>
             </div>
         `;
     });
@@ -206,6 +206,27 @@ function showError(message) {
             <p>${escapeHtml(message)}</p>
         </div>
     `;
+}
+
+// Copy to clipboard
+function copyToClipboard(url, event) {
+    event.stopPropagation();
+
+    navigator.clipboard.writeText(url).then(() => {
+        // Change button text temporarily
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '✓ Copied!';
+        button.style.background = '#4caf50';
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy link. Please try again.');
+    });
 }
 
 // Escape HTML

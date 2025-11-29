@@ -209,6 +209,13 @@ function renderSubmissions() {
                     </div>
                 `;
             }
+
+            html += `
+                <button class="btn" onclick="copyLinkAdmin('${escapeHtml(submission.file_url)}')"
+                        style="width: 100%; margin: 10px 0; background: #2196f3;">
+                    📋 Copy Link
+                </button>
+            `;
         }
 
         if (submission.approval_status === 'pending') {
@@ -296,6 +303,16 @@ async function rejectSubmission(submissionId) {
         console.error('Error rejecting submission:', error);
         alert('Failed to reject submission. Please try again.');
     }
+}
+
+// Copy link to clipboard (admin)
+function copyLinkAdmin(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        alert('✓ Link copied!\n\nYou can now paste it in WhatsApp.');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        prompt('Copy this link:', url);
+    });
 }
 
 // Show error

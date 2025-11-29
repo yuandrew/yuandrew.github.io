@@ -187,6 +187,123 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page-container {
+                margin: 0;
+            }
+
+            .header {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .auth-section {
+                padding: 25px;
+                max-width: 100%;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .filter-tabs {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .filter-tab {
+                flex: 1;
+                min-width: calc(50% - 4px);
+                padding: 12px 15px;
+                font-size: 14px;
+                min-height: 48px;
+            }
+
+            .submission-card {
+                padding: 15px;
+            }
+
+            .submission-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .user-info {
+                font-size: 1em;
+            }
+
+            .status-badge {
+                align-self: flex-start;
+            }
+
+            .task-info {
+                padding: 12px;
+            }
+
+            .media-preview img,
+            .media-preview video {
+                max-height: 250px;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn, .btn-approve, .btn-reject {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .button {
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+                width: 100%;
+            }
+
+            input[type="password"], input[type="text"] {
+                font-size: 16px;
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.3em;
+            }
+
+            .auth-section h1 {
+                font-size: 1.4em;
+            }
+
+            .filter-tab {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .submission-card {
+                padding: 12px;
+            }
+
+            .media-preview img,
+            .media-preview video {
+                max-height: 200px;
+            }
+        }
     </style>
 </head>
 <body>

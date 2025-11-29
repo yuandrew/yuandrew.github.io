@@ -183,3 +183,55 @@ input[type="password"]:focus {
 .register-button {
     margin-top: 20px;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 25px;
+        max-width: 100%;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .subtitle {
+        font-size: 0.85em;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        font-size: 16px;
+        padding: 14px;
+    }
+
+    .button {
+        padding: 14px;
+        font-size: 16px;
+        min-height: 48px;
+    }
+
+    .info-box {
+        font-size: 0.85em;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.3em;
+    }
+
+    .subtitle {
+        font-size: 0.8em;
+        margin-bottom: 20px;
+    }
+}

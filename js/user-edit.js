@@ -273,6 +273,17 @@ function buildExistingSubmissionContent(task, submission) {
         }
     }
 
+    // Add copy link button for media submissions
+    if (submission.file_url) {
+        content += `
+            <div style="margin: 15px 0;">
+                <button class="btn-secondary" onclick="copySubmissionLink('${escapeHtml(submission.file_url)}')" style="width: 100%;">
+                    📋 Copy Link to Share
+                </button>
+            </div>
+        `;
+    }
+
     // Add update/remove buttons
     content += `
         <div class="modal-actions">
@@ -597,6 +608,17 @@ function closeModalOnOverlayClick(event) {
     if (event.target.id === 'taskModal') {
         closeTaskModal();
     }
+}
+
+// Copy submission link to clipboard
+function copySubmissionLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        alert('✓ Link copied to clipboard!\n\nYou can now paste it in WhatsApp to share.');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        // Fallback: show the URL in an alert so they can copy manually
+        prompt('Copy this link to share:', url);
+    });
 }
 
 // Show error
