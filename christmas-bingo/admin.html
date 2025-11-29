@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Bingo - Admin Panel</title>
+    <link href="../css/bingo.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .submission-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .user-info {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .task-info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .task-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+
+        .media-preview {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .media-preview img,
+        .media-preview video {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-reject {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .filter-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-approved {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-rejected {
+            background: #f44336;
+            color: white;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div id="authSection" class="auth-section" style="display: none;">
+            <h1>🔒 Admin Access Required</h1>
+            <p style="margin: 20px 0; color: #666;">Enter the admin password to access the challenge approval panel.</p>
+
+            <div id="authError" class="error-message"></div>
+
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password</label>
+                    <input type="password" id="adminPassword" required>
+                </div>
+                <button type="submit" class="button">Access Admin Panel</button>
+            </form>
+
+            <p style="margin-top: 20px; text-align: center;">
+                <a href="#" id="backToGroupLink" class="back-link">← Back to Group Page</a>
+            </p>
+        </div>
+
+        <div id="adminPanel" style="display: none;">
+            <div class="header">
+                <a href="#" id="backLink" class="back-link">← Back to Group Page</a>
+                <h1>🎄 Admin Panel</h1>
+                <p id="groupNameDisplay" style="color: #666; margin-top: 10px;"></p>
+            </div>
+
+            <div class="content">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterSubmissions('pending')">
+                        Pending
+                    </button>
+                    <button class="filter-tab" onclick="filterSubmissions('approved')">
+                        Approved
+                    </button>
+                    <button class="filter-tab" onclick="filterSubmissions('rejected')">
+                        Rejected
+                    </button>
+                    <button class="filter-tab" onclick="filterSubmissions('all')">
+                        All Challenges
+                    </button>
+                </div>
+
+                <div id="submissionsContainer">
+                    <div class="loading-spinner">Loading submissions...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Supabase client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Load config -->
+    <script src="../js/supabase-config.js"></script>
+    <!-- Load admin logic -->
+    <script src="../js/admin.js"></script>
+</body>
+</html>

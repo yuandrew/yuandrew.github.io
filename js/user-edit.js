@@ -143,22 +143,33 @@ async function loadSubmissions() {
 function renderBingoBoard() {
     const board = document.getElementById('bingoBoard');
 
-    // Create a map of completed squares
-    const completedMap = {};
+    // Create a map of submissions (approved and pending)
+    const submissionMap = {};
     submissions.forEach(sub => {
-        completedMap[sub.square_index] = sub;
+        submissionMap[sub.square_index] = sub;
     });
 
     let html = '<div class="bingo-board">';
 
     BINGO_TASKS.forEach((task, index) => {
-        const isCompleted = completedMap.hasOwnProperty(index);
-        const squareClass = isCompleted ? 'bingo-square completed' : 'bingo-square';
+        const submission = submissionMap[index];
+        let squareClass = 'bingo-square';
+
+        if (submission) {
+            if (submission.approval_status === 'approved') {
+                squareClass = 'bingo-square completed';
+            } else if (submission.approval_status === 'pending') {
+                squareClass = 'bingo-square pending';
+            } else if (submission.approval_status === 'rejected') {
+                squareClass = 'bingo-square rejected';
+            }
+        }
 
         html += `
             <div class="${squareClass}" onclick="handleSquareClick(${index})">
                 <div class="square-number">${index + 1}</div>
                 ${task.isChallenge ? '<div class="challenge-badge">⭐</div>' : ''}
+                ${submission && submission.approval_status === 'pending' ? '<div class="pending-badge">⏳</div>' : ''}
                 <div class="square-content">
                     ${escapeHtml(task.text)}
                 </div>
@@ -172,7 +183,8 @@ function renderBingoBoard() {
 
 // Update progress bar
 function updateProgress() {
-    const completed = submissions.length;
+    // Only count approved submissions
+    const completed = submissions.filter(sub => sub.approval_status === 'approved').length;
     const total = 25;
     const percentage = (completed / total) * 100;
 
@@ -391,15 +403,19 @@ async function submitAttestation() {
 
     try {
         // Insert submission
+        const submissionData = {
+            user_id: currentUser.id,
+            square_index: currentTaskIndex,
+            square_text: task.text,
+            submission_type: 'attestation',
+            file_url: null,
+            is_challenge: task.isChallenge,
+            approval_status: task.isChallenge ? 'pending' : 'approved'
+        };
+
         const { data, error } = await supabase
             .from('bingo_submissions')
-            .insert([{
-                user_id: currentUser.id,
-                square_index: currentTaskIndex,
-                square_text: task.text,
-                submission_type: 'attestation',
-                file_url: null
-            }])
+            .insert([submissionData])
             .select();
 
         if (error) throw error;
@@ -410,7 +426,11 @@ async function submitAttestation() {
         updateProgress();
         closeTaskModal();
 
-        alert('Task completed successfully!');
+        if (task.isChallenge) {
+            alert('Challenge submission received! It will appear on your board once the admin approves it.');
+        } else {
+            alert('Task completed successfully!');
+        }
     } catch (error) {
         console.error('Error submitting attestation:', error);
         const errorMessage = error.message ? `Failed to submit: ${error.message}` : 'Failed to submit. Please try again.';
@@ -454,15 +474,19 @@ async function submitUpload() {
             .getPublicUrl(fileName);
 
         // Insert submission
+        const submissionData = {
+            user_id: currentUser.id,
+            square_index: currentTaskIndex,
+            square_text: task.text,
+            submission_type: task.type,
+            file_url: urlData.publicUrl,
+            is_challenge: task.isChallenge,
+            approval_status: task.isChallenge ? 'pending' : 'approved'
+        };
+
         const { data, error } = await supabase
             .from('bingo_submissions')
-            .insert([{
-                user_id: currentUser.id,
-                square_index: currentTaskIndex,
-                square_text: task.text,
-                submission_type: task.type,
-                file_url: urlData.publicUrl
-            }])
+            .insert([submissionData])
             .select();
 
         if (error) throw error;
@@ -474,7 +498,11 @@ async function submitUpload() {
         closeTaskModal();
         currentFile = null;
 
-        alert('Task completed successfully!');
+        if (task.isChallenge) {
+            alert('Challenge submission received! It will appear on your board once the admin approves it.');
+        } else {
+            alert('Task completed successfully!');
+        }
     } catch (error) {
         console.error('Error submitting upload:', error);
         let errorMessage = 'Failed to upload. Please try again.';

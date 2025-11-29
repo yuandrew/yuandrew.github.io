@@ -23,6 +23,12 @@
                     return;
                 }
 
+                // Check if it's an admin page: /christmas-bingo/[group]/admin/
+                if (path.match(/\/christmas-bingo\/[^\/]+\/admin/)) {
+                    window.location.replace('/christmas-bingo/admin.html?redirect=' + encodeURIComponent(path) + window.location.search.replace('?', '&') + window.location.hash);
+                    return;
+                }
+
                 // Check if it's a group page: /christmas-bingo/[group]/
                 if (path.match(/\/christmas-bingo\/[^\/]+\/?$/) && !path.includes('register') && !path.includes('.html')) {
                     window.location.replace('/christmas-bingo/index.html?redirect=' + encodeURIComponent(path) + window.location.search.replace('?', '&') + window.location.hash);

@@ -84,8 +84,9 @@ async function init() {
             return;
         }
 
-        // Update count
-        document.getElementById('completedCount').textContent = submissions.length;
+        // Update count (only approved submissions)
+        const approvedCount = submissions.filter(sub => sub.approval_status === 'approved').length;
+        document.getElementById('completedCount').textContent = approvedCount;
 
         // Render submissions
         renderSubmissions(submissions);

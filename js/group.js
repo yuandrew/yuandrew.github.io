@@ -82,13 +82,14 @@ async function loadLeaderboard(groupId, groupName) {
             return;
         }
 
-        // For each user, count their submissions
+        // For each user, count their approved submissions only
         const usersWithScores = await Promise.all(
             users.map(async (user) => {
                 const { count, error: countError } = await supabase
                     .from('bingo_submissions')
                     .select('*', { count: 'exact', head: true })
-                    .eq('user_id', user.id);
+                    .eq('user_id', user.id)
+                    .eq('approval_status', 'approved');
 
                 return {
                     ...user,
@@ -153,6 +154,11 @@ function renderLeaderboard(users, groupName) {
             <h3>Want to Join?</h3>
             <p style="margin: 15px 0; color: #666;">Register to start playing</p>
             <button onclick="showRegisterForm()" class="button">Register Now</button>
+            <p style="margin-top: 20px;">
+                <a href="/christmas-bingo/${groupName}/admin/" style="color: #667eea; text-decoration: none; font-size: 0.9em;">
+                    🔒 Admin Panel
+                </a>
+            </p>
         </div>
     `;
 
