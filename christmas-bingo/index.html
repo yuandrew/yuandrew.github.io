@@ -230,6 +230,224 @@
                 padding: 12px;
             }
         }
+
+        /* Activity Feed Styles */
+        .activity-feed-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .activity-feed-container {
+            margin-top: 20px;
+        }
+
+        .activity-feed-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .activity-feed-item:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+
+        .activity-thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .activity-thumbnail.attestation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+        }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+
+        .activity-username {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+
+        .activity-time {
+            color: #999;
+            font-size: 0.85em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .activity-task {
+            color: #333;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+
+        .activity-task-number {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 6px;
+        }
+
+        .activity-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-top: 4px;
+        }
+
+        .activity-type-badge.photo {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .activity-type-badge.video {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .activity-type-badge.attestation {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        /* Modal for activity feed media */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .modal-close:hover {
+            color: #ccc;
+        }
+
+        /* Empty state for activity feed */
+        .activity-empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .activity-empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        /* Mobile responsive for activity feed */
+        @media (max-width: 768px) {
+            .activity-feed-section {
+                margin-top: 30px;
+                padding-top: 20px;
+            }
+
+            .activity-feed-item {
+                padding: 12px;
+            }
+
+            .activity-thumbnail {
+                width: 60px;
+                height: 60px;
+            }
+
+            .activity-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .activity-time {
+                font-size: 0.8em;
+            }
+
+            .modal-close {
+                font-size: 30px;
+                top: 10px;
+                right: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .activity-feed-item {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .activity-thumbnail {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
+            }
+
+            .activity-username {
+                font-size: 0.9em;
+            }
+
+            .activity-task {
+                font-size: 0.85em;
+            }
+
+            .activity-task-number {
+                font-size: 0.75em;
+                padding: 1px 4px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -244,6 +462,13 @@
                 Loading...
             </div>
         </div>
+    </div>
+
+    <!-- Modal for viewing activity feed media -->
+    <div id="activityMediaModal" class="modal" onclick="closeActivityModal()">
+        <span class="modal-close">&times;</span>
+        <img id="activityModalImage" class="modal-content" style="display: none;">
+        <video id="activityModalVideo" class="modal-content" controls style="display: none;"></video>
     </div>
 
     <!-- Load Supabase client library -->
