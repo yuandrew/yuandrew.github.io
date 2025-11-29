@@ -413,7 +413,8 @@ async function submitAttestation() {
         alert('Task completed successfully!');
     } catch (error) {
         console.error('Error submitting attestation:', error);
-        alert('Failed to submit. Please try again.');
+        const errorMessage = error.message ? `Failed to submit: ${error.message}` : 'Failed to submit. Please try again.';
+        alert(errorMessage);
     }
 }
 
@@ -476,7 +477,22 @@ async function submitUpload() {
         alert('Task completed successfully!');
     } catch (error) {
         console.error('Error submitting upload:', error);
-        alert('Failed to upload. Please try again.');
+        let errorMessage = 'Failed to upload. Please try again.';
+
+        // Provide more specific error messages
+        if (error.message) {
+            if (error.message.includes('bucket') || error.message.includes('not found')) {
+                errorMessage = 'Storage bucket not found. Please create the "bingo-uploads" bucket in Supabase Storage and set it to public.';
+            } else if (error.message.includes('policy')) {
+                errorMessage = 'Permission denied. Make sure the "bingo-uploads" bucket is set to PUBLIC in Supabase Storage settings.';
+            } else if (error.message.includes('size')) {
+                errorMessage = 'File is too large. Maximum size is 50MB.';
+            } else {
+                errorMessage = `Upload failed: ${error.message}`;
+            }
+        }
+
+        alert(errorMessage);
         submitButton.disabled = false;
         submitButton.textContent = 'Upload & Submit';
     }
