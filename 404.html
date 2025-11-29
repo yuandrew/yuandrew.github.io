@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Handle routing for GitHub Pages
+        (function() {
+            const path = window.location.pathname;
+
+            // Christmas Bingo routing
+            if (path.includes('/christmas-bingo/')) {
+                // Check if it's a user view page: /christmas-bingo/[group]/[user]/view/
+                if (path.match(/\/christmas-bingo\/[^\/]+\/[^\/]+\/view/)) {
+                    window.location.replace('/christmas-bingo/view.html' + window.location.search + window.location.hash);
+                    return;
+                }
+
+                // Check if it's a user edit page: /christmas-bingo/[group]/[user]/edit/
+                if (path.match(/\/christmas-bingo\/[^\/]+\/[^\/]+\/edit/)) {
+                    window.location.replace('/christmas-bingo/edit.html' + window.location.search + window.location.hash);
+                    return;
+                }
+
+                // Check if it's a group page: /christmas-bingo/[group]/
+                if (path.match(/\/christmas-bingo\/[^\/]+\/?$/) && !path.includes('register')) {
+                    window.location.replace('/christmas-bingo/index.html' + window.location.search + window.location.hash);
+                    return;
+                }
+            }
+
+            // If no match, show actual 404
+            document.body.innerHTML = `
+                <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                    <h1>404 - Page Not Found</h1>
+                    <p>The page you're looking for doesn't exist.</p>
+                    <p><a href="/">Go to Home</a></p>
+                </div>
+            `;
+        })();
+    </script>
+</head>
+<body>
+    <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+        <p>Redirecting...</p>
+    </div>
+</body>
+</html>
