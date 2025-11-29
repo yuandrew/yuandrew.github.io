@@ -11,10 +11,22 @@ try {
 
 // Parse group name from URL
 function getGroupNameFromURL() {
-    const path = window.location.pathname;
+    // First check if we have a redirect parameter (from 404 routing)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectPath = urlParams.get('redirect');
+
+    const path = redirectPath || window.location.pathname;
+
     // Expected format: /christmas-bingo/[groupname]/ or /christmas-bingo/[groupname]
     const match = path.match(/\/christmas-bingo\/([^\/]+)/);
-    return match ? match[1] : null;
+    const groupName = match ? match[1] : null;
+
+    // Filter out non-group pages
+    if (groupName && (groupName === 'index.html' || groupName === 'register.html' || groupName === 'register')) {
+        return null;
+    }
+
+    return groupName;
 }
 
 // Main initialization

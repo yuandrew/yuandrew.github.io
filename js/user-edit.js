@@ -45,7 +45,12 @@ let submissions = [];
 
 // Parse URL to get group name and username
 function getPathInfo() {
-    const path = window.location.pathname;
+    // First check if we have a redirect parameter (from 404 routing)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectPath = urlParams.get('redirect');
+
+    const path = redirectPath || window.location.pathname;
+
     // Expected format: /christmas-bingo/[groupname]/[username]/edit/
     const match = path.match(/\/christmas-bingo\/([^\/]+)\/([^\/]+)\/edit/);
     if (match) {

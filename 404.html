@@ -13,19 +13,19 @@
             if (path.includes('/christmas-bingo/')) {
                 // Check if it's a user view page: /christmas-bingo/[group]/[user]/view/
                 if (path.match(/\/christmas-bingo\/[^\/]+\/[^\/]+\/view/)) {
-                    window.location.replace('/christmas-bingo/view.html' + window.location.search + window.location.hash);
+                    window.location.replace('/christmas-bingo/view.html?redirect=' + encodeURIComponent(path) + window.location.search.replace('?', '&') + window.location.hash);
                     return;
                 }
 
                 // Check if it's a user edit page: /christmas-bingo/[group]/[user]/edit/
                 if (path.match(/\/christmas-bingo\/[^\/]+\/[^\/]+\/edit/)) {
-                    window.location.replace('/christmas-bingo/edit.html' + window.location.search + window.location.hash);
+                    window.location.replace('/christmas-bingo/edit.html?redirect=' + encodeURIComponent(path) + window.location.search.replace('?', '&') + window.location.hash);
                     return;
                 }
 
                 // Check if it's a group page: /christmas-bingo/[group]/
-                if (path.match(/\/christmas-bingo\/[^\/]+\/?$/) && !path.includes('register')) {
-                    window.location.replace('/christmas-bingo/index.html' + window.location.search + window.location.hash);
+                if (path.match(/\/christmas-bingo\/[^\/]+\/?$/) && !path.includes('register') && !path.includes('.html')) {
+                    window.location.replace('/christmas-bingo/index.html?redirect=' + encodeURIComponent(path) + window.location.search.replace('?', '&') + window.location.hash);
                     return;
                 }
             }
