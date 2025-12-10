@@ -22,7 +22,7 @@ function getGroupNameFromURL() {
 
     // Expected format: /christmas-bingo/[groupname]/ or /christmas-bingo/[groupname]
     const match = path.match(/\/christmas-bingo\/([^\/]+)/);
-    const groupName = match ? match[1] : null;
+    const groupName = match ? decodeURIComponent(match[1]) : null;
 
     // Filter out non-group pages
     if (groupName && (groupName === 'index.html' || groupName === 'register.html' || groupName === 'register')) {
@@ -306,7 +306,7 @@ function renderLeaderboard(users, groupName) {
             <p style="margin: 15px 0; color: #666;">Register to start playing</p>
             <button onclick="showRegisterForm()" class="button">Register Now</button>
             <p style="margin-top: 20px;">
-                <a href="/christmas-bingo/${groupName}/admin/" style="color: #667eea; text-decoration: none; font-size: 0.9em;">
+                <a href="/christmas-bingo/${encodeURIComponent(groupName)}/admin/" style="color: #667eea; text-decoration: none; font-size: 0.9em;">
                     🔒 Admin Panel
                 </a>
             </p>
@@ -417,7 +417,7 @@ async function handleUserRegistration(event) {
         successDiv.classList.add('show');
 
         setTimeout(() => {
-            window.location.href = `/christmas-bingo/${groupName}/${username}/view/`;
+            window.location.href = `/christmas-bingo/${encodeURIComponent(groupName)}/${encodeURIComponent(username)}/view/`;
         }, 1500);
 
     } catch (error) {
@@ -431,7 +431,7 @@ async function handleUserRegistration(event) {
 
 // Navigate to user view
 function goToUserView(groupName, username) {
-    window.location.href = `/christmas-bingo/${groupName}/${username}/view/`;
+    window.location.href = `/christmas-bingo/${encodeURIComponent(groupName)}/${encodeURIComponent(username)}/view/`;
 }
 
 // Format time ago (X minutes/hours/days ago)

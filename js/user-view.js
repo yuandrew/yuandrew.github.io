@@ -21,8 +21,8 @@ function getPathInfo() {
     const match = path.match(/\/christmas-bingo\/([^\/]+)\/([^\/]+)\/view/);
     if (match) {
         return {
-            groupName: match[1],
-            username: match[2]
+            groupName: decodeURIComponent(match[1]),
+            username: decodeURIComponent(match[2])
         };
     }
     return null;
@@ -40,8 +40,8 @@ async function init() {
     const { groupName, username } = pathInfo;
 
     // Set up navigation links
-    document.getElementById('backLink').href = `/christmas-bingo/${groupName}/`;
-    document.getElementById('editButton').href = `/christmas-bingo/${groupName}/${username}/edit/`;
+    document.getElementById('backLink').href = `/christmas-bingo/${encodeURIComponent(groupName)}/`;
+    document.getElementById('editButton').href = `/christmas-bingo/${encodeURIComponent(groupName)}/${encodeURIComponent(username)}/edit/`;
 
     // Set username
     document.getElementById('userName').textContent = username;
@@ -67,7 +67,7 @@ async function init() {
             .single();
 
         if (!user) {
-            showError('User not found');
+            showError('User not found. They may need to register first.');
             return;
         }
 
@@ -109,9 +109,9 @@ function renderSubmissions(submissions) {
     if (mediaSubmissions.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">📝</div>
-                <h3>No Media Submissions Yet</h3>
-                <p>Upload photos and videos to see them here!</p>
+                <div class="empty-state-icon">📭</div>
+                <h3>No Tasks Completed Yet</h3>
+                <p>Start completing tasks to see them here!</p>
             </div>
         `;
         return;

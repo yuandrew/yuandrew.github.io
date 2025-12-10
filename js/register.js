@@ -62,7 +62,7 @@ form.addEventListener('submit', async (e) => {
         // Success! Redirect to the group page
         showSuccess('Group created successfully! Redirecting...');
         setTimeout(() => {
-            window.location.href = `/christmas-bingo/${groupName}/`;
+            window.location.href = `/christmas-bingo/${encodeURIComponent(groupName)}/`;
         }, 1500);
 
     } catch (error) {

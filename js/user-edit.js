@@ -20,7 +20,7 @@ const BINGO_TASKS = [
     { text: "volunteer somewhere", type: "photo", isChallenge: false },
     { text: "CHALLENGE: Bake the biggest Christmas-shaped cookie (Only 3 biggest cookies can X this square)", type: "photo", isChallenge: true },
     { text: "Do a dramatic reading of Luke 2:1–20", type: "video", isChallenge: false },
-    { text: "read a book and add a summary", type: "attestation", isChallenge: false },
+    { text: "read a book and add a summary", type: "attestation", isChallenge: false, requiresText: true, minWords: 100 },
     { text: "chug a sparkling water without burping (record whole thing or no credit.)", type: "video", isChallenge: false },
     { text: "CHALLENGE: wrap a gift with oven mitts on (only fastest person can X)", type: "video", isChallenge: true },
     { text: "attend church :)", type: "attestation", isChallenge: false },
@@ -59,8 +59,8 @@ function getPathInfo() {
     const match = path.match(/\/christmas-bingo\/([^\/]+)\/([^\/]+)\/edit/);
     if (match) {
         return {
-            groupName: match[1],
-            username: match[2]
+            groupName: decodeURIComponent(match[1]),
+            username: decodeURIComponent(match[2])
         };
     }
     return null;
@@ -79,7 +79,7 @@ async function init() {
     currentUsername = pathInfo.username;
 
     // Set up navigation links
-    document.getElementById('backLink').href = `/christmas-bingo/${currentGroupName}/${currentUsername}/view/`;
+    document.getElementById('backLink').href = `/christmas-bingo/${encodeURIComponent(currentGroupName)}/${encodeURIComponent(currentUsername)}/view/`;
 
     // Set username
     document.getElementById('userName').textContent = currentUsername;
@@ -246,14 +246,26 @@ function buildExistingSubmissionContent(task, submission) {
     `;
 
     if (task.type === 'attestation') {
-        content += `
-            <div class="attestation-section">
-                <div class="attestation-checkbox">
-                    <input type="checkbox" checked disabled>
-                    <span>I have completed this task</span>
+        // Check if this is the book summary task with text
+        if (task.requiresText && submission.file_url) {
+            content += `
+                <div class="attestation-section">
+                    <h3 style="margin-bottom: 10px;">Your Book Summary:</h3>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; white-space: pre-wrap; line-height: 1.6;">
+                        ${escapeHtml(submission.file_url)}
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            content += `
+                <div class="attestation-section">
+                    <div class="attestation-checkbox">
+                        <input type="checkbox" checked disabled>
+                        <span>I have completed this task</span>
+                    </div>
+                </div>
+            `;
+        }
     } else if (submission.file_url) {
         // Show preview of uploaded file
         if (task.type === 'photo') {
@@ -273,8 +285,8 @@ function buildExistingSubmissionContent(task, submission) {
         }
     }
 
-    // Add copy link button for media submissions
-    if (submission.file_url) {
+    // Add copy link button for media submissions (but not for book summary text)
+    if (submission.file_url && task.type !== 'attestation') {
         content += `
             <div style="margin: 15px 0;">
                 <button class="btn-secondary" onclick="copySubmissionLink('${escapeHtml(submission.file_url)}')" style="width: 100%;">
@@ -309,18 +321,39 @@ function buildNewSubmissionContent(task, index) {
     let content = '';
 
     if (task.type === 'attestation') {
-        content += `
-            <div class="attestation-section">
-                <div class="attestation-checkbox">
-                    <input type="checkbox" id="attestationCheckbox">
-                    <label for="attestationCheckbox">I have completed this task</label>
+        if (task.requiresText) {
+            // Special handling for book summary task
+            content += `
+                <div class="attestation-section">
+                    <label for="bookSummary" style="display: block; margin-bottom: 10px; font-weight: bold;">
+                        Book Summary (minimum ${task.minWords} words):
+                    </label>
+                    <textarea
+                        id="bookSummary"
+                        placeholder="Enter your book summary here..."
+                        style="width: 100%; min-height: 200px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; line-height: 1.5; resize: vertical;"
+                        oninput="updateWordCount()"></textarea>
+                    <div id="wordCount" style="margin-top: 8px; color: #999; font-size: 0.9em;">0 words</div>
                 </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                <button class="btn-primary" onclick="submitAttestation()">Submit</button>
-            </div>
-        `;
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button class="btn-primary" id="submitAttestationBtn" onclick="submitAttestation()" disabled>Submit</button>
+                </div>
+            `;
+        } else {
+            content += `
+                <div class="attestation-section">
+                    <div class="attestation-checkbox">
+                        <input type="checkbox" id="attestationCheckbox">
+                        <label for="attestationCheckbox">I have completed this task</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button class="btn-primary" onclick="submitAttestation()">Submit</button>
+                </div>
+            `;
+        }
     } else {
         // Photo or video upload
         const acceptType = task.type === 'photo' ? 'image/*' : 'video/*';
@@ -402,14 +435,100 @@ function clearFileSelection() {
     submitButton.disabled = true;
 }
 
+// Update word count for book summary
+function updateWordCount() {
+    const textarea = document.getElementById('bookSummary');
+    const wordCountDiv = document.getElementById('wordCount');
+    const submitBtn = document.getElementById('submitAttestationBtn');
+    const task = BINGO_TASKS[currentTaskIndex];
+
+    if (!textarea || !task.requiresText) return;
+
+    const text = textarea.value.trim();
+    const words = text.split(/\s+/).filter(word => word.length > 0);
+    const wordCount = words.length;
+
+    wordCountDiv.textContent = `${wordCount} words`;
+
+    if (wordCount >= task.minWords) {
+        wordCountDiv.style.color = '#4caf50';
+        if (submitBtn) submitBtn.disabled = false;
+    } else {
+        wordCountDiv.style.color = '#999';
+        if (submitBtn) submitBtn.disabled = true;
+    }
+}
+
 // Submit attestation
 async function submitAttestation() {
+    const task = BINGO_TASKS[currentTaskIndex];
+
+    // Check if this task requires text input (book summary)
+    if (task.requiresText) {
+        const textarea = document.getElementById('bookSummary');
+        const text = textarea.value.trim();
+        const words = text.split(/\s+/).filter(word => word.length > 0);
+        const wordCount = words.length;
+
+        if (wordCount < task.minWords) {
+            alert(`Your summary must be at least ${task.minWords} words. You currently have ${wordCount} words.`);
+            return;
+        }
+
+        // Store the summary text in file_url field
+        await submitAttestationWithText(text);
+        return;
+    }
+
+    // Regular attestation (checkbox)
     const checkbox = document.getElementById('attestationCheckbox');
     if (!checkbox.checked) {
         alert('Please check the box to attest that you have completed this task.');
         return;
     }
 
+    await submitRegularAttestation();
+}
+
+// Submit attestation with text (for book summary)
+async function submitAttestationWithText(text) {
+    const task = BINGO_TASKS[currentTaskIndex];
+
+    try {
+        // Insert submission with text stored in file_url
+        const submissionData = {
+            user_id: currentUser.id,
+            square_index: currentTaskIndex,
+            square_text: task.text,
+            submission_type: 'attestation',
+            file_url: text, // Store the book summary in file_url field
+            is_challenge: task.isChallenge,
+            approval_status: task.isChallenge ? 'pending' : 'approved'
+        };
+
+        const { data, error } = await supabase
+            .from('bingo_submissions')
+            .insert([submissionData])
+            .select();
+
+        if (error) throw error;
+
+        // Reload submissions and update UI
+        await loadSubmissions();
+        renderBingoBoard();
+        updateProgress();
+        closeTaskModal();
+
+        alert('Book summary submitted successfully!');
+    } catch (error) {
+        console.error('Error submitting book summary:', error);
+        const errorMessage = error.message ? `Failed to submit: ${error.message}` : 'Failed to submit. Please try again.';
+        alert(errorMessage);
+    }
+}
+
+// Submit regular attestation (checkbox only)
+async function submitRegularAttestation() {
     const task = BINGO_TASKS[currentTaskIndex];
 
     try {

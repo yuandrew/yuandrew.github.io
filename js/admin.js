@@ -22,7 +22,7 @@ function getGroupNameFromURL() {
     const path = redirectPath || window.location.pathname;
 
     const match = path.match(/\/christmas-bingo\/([^\/]+)\/admin/);
-    return match ? match[1] : null;
+    return match ? decodeURIComponent(match[1]) : null;
 }
 
 // Initialize page
@@ -35,8 +35,8 @@ async function init() {
     }
 
     // Set up back links
-    document.getElementById('backLink').href = `/christmas-bingo/${currentGroupName}/`;
-    document.getElementById('backToGroupLink').href = `/christmas-bingo/${currentGroupName}/`;
+    document.getElementById('backLink').href = `/christmas-bingo/${encodeURIComponent(currentGroupName)}/`;
+    document.getElementById('backToGroupLink').href = `/christmas-bingo/${encodeURIComponent(currentGroupName)}/`;
 
     // Check if already authenticated
     const isAuthenticated = sessionStorage.getItem(`admin_auth_${currentGroupName}`) === 'true';
