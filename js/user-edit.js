@@ -579,6 +579,17 @@ async function submitUpload() {
     }
 
     const submitButton = document.getElementById('submitButton');
+    const originalButtonText = submitButton.textContent;
+
+    // Validate file size before starting upload (100MB limit)
+    const maxSizeBytes = 100 * 1024 * 1024; // 100MB
+    if (currentFile.size > maxSizeBytes) {
+        alert(`File is too large. Maximum size is 100MB.\nYour file is ${(currentFile.size / (1024 * 1024)).toFixed(1)}MB.`);
+        return;
+    }
+
+    console.log(`Starting upload: ${currentFile.name}, size: ${(currentFile.size / (1024 * 1024)).toFixed(2)}MB`);
+
     submitButton.disabled = true;
     submitButton.textContent = 'Uploading...';
 
@@ -589,8 +600,10 @@ async function submitUpload() {
         const fileExt = currentFile.name.split('.').pop();
         const fileName = `${currentGroupName}/${currentUsername}/${currentTaskIndex}_${Date.now()}.${fileExt}`;
 
-        // Upload file to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase
+        console.log('Uploading to storage:', fileName);
+
+        // Create upload promise
+        const uploadPromise = supabase
             .storage
             .from(STORAGE_BUCKET)
             .upload(fileName, currentFile, {
@@ -598,13 +611,29 @@ async function submitUpload() {
                 upsert: false
             });
 
-        if (uploadError) throw uploadError;
+        // Create timeout promise (90 seconds for large videos)
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Upload timed out after 90 seconds. Please check your internet connection and try again.')), 90000);
+        });
+
+        // Race between upload and timeout
+        const { data: uploadData, error: uploadError } = await Promise.race([uploadPromise, timeoutPromise]);
+
+        if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw uploadError;
+        }
+
+        console.log('Upload successful, getting public URL...');
 
         // Get public URL
         const { data: urlData } = supabase
             .storage
             .from(STORAGE_BUCKET)
             .getPublicUrl(fileName);
+
+        console.log('Public URL obtained:', urlData.publicUrl);
+        console.log('Saving submission to database...');
 
         // Insert submission
         const submissionData = {
@@ -622,7 +651,12 @@ async function submitUpload() {
             .insert([submissionData])
             .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Database insert error:', error);
+            throw error;
+        }
+
+        console.log('Submission saved successfully!');
 
         // Reload submissions and update UI
         await loadSubmissions();
@@ -642,20 +676,31 @@ async function submitUpload() {
 
         // Provide more specific error messages
         if (error.message) {
-            if (error.message.includes('bucket') || error.message.includes('not found')) {
-                errorMessage = 'Storage bucket not found. Please create the "bingo-uploads" bucket in Supabase Storage and set it to public.';
-            } else if (error.message.includes('policy')) {
-                errorMessage = 'Permission denied. Make sure the "bingo-uploads" bucket is set to PUBLIC in Supabase Storage settings.';
-            } else if (error.message.includes('size')) {
-                errorMessage = 'File is too large. Maximum size is 50MB.';
+            console.error('Error message:', error.message);
+
+            if (error.message.includes('timed out')) {
+                errorMessage = error.message;
+            } else if (error.message.includes('bucket') || error.message.includes('not found')) {
+                errorMessage = 'Storage bucket not found. Please contact the administrator.';
+            } else if (error.message.includes('policy') || error.message.includes('permission')) {
+                errorMessage = 'Permission denied. Please contact the administrator.';
+            } else if (error.message.includes('size') || error.message.includes('payload')) {
+                errorMessage = 'File is too large. Please try a smaller file or compress your video.';
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                errorMessage = 'Network error. Please check your internet connection and try again.';
             } else {
                 errorMessage = `Upload failed: ${error.message}`;
             }
         }
 
         alert(errorMessage);
-        submitButton.disabled = false;
-        submitButton.textContent = 'Upload & Submit';
+    } finally {
+        // Always reset button state, even if there's an error
+        console.log('Resetting button state...');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        }
     }
 }
 
