@@ -335,6 +335,8 @@
 
         .upload-section input[type="file"] {
             display: none;
+            position: absolute;
+            left: -9999px;
         }
 
         .upload-button {
@@ -347,11 +349,19 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
+            font-size: 16px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         .upload-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-button:active {
+            transform: translateY(0);
         }
 
         .attestation-section {
@@ -548,9 +558,12 @@
             }
 
             .upload-button {
+                display: block;
+                width: 100%;
                 padding: 14px 25px;
                 font-size: 16px;
                 min-height: 48px;
+                text-align: center;
             }
 
             .preview-media {
