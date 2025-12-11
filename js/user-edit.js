@@ -570,6 +570,95 @@ async function submitRegularAttestation() {
     }
 }
 
+// Compress video using HTML5 Canvas and MediaRecorder
+async function compressVideo(file) {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+
+        video.onloadedmetadata = function() {
+            // Revoke the object URL after loading metadata
+            URL.revokeObjectURL(video.src);
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set max dimensions (720p should be sufficient for bingo tasks)
+            const maxWidth = 1280;
+            const maxHeight = 720;
+            let width = video.videoWidth;
+            let height = video.videoHeight;
+
+            // Calculate new dimensions maintaining aspect ratio
+            if (width > maxWidth || height > maxHeight) {
+                const aspectRatio = width / height;
+                if (width > height) {
+                    width = maxWidth;
+                    height = maxWidth / aspectRatio;
+                } else {
+                    height = maxHeight;
+                    width = maxHeight * aspectRatio;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Set up MediaRecorder to compress the video
+            const stream = canvas.captureStream(30); // 30 FPS
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp8',
+                videoBitsPerSecond: 1000000 // 1 Mbps - good balance of quality and size
+            });
+
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const compressedBlob = new Blob(chunks, { type: 'video/webm' });
+                const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, '.webm'), {
+                    type: 'video/webm',
+                    lastModified: Date.now()
+                });
+                resolve(compressedFile);
+            };
+
+            mediaRecorder.onerror = (error) => {
+                reject(error);
+            };
+
+            // Play the video and draw frames to canvas
+            video.currentTime = 0;
+            video.play();
+
+            mediaRecorder.start();
+
+            const drawFrame = () => {
+                if (!video.paused && !video.ended) {
+                    ctx.drawImage(video, 0, 0, width, height);
+                    requestAnimationFrame(drawFrame);
+                } else if (video.ended) {
+                    mediaRecorder.stop();
+                    video.remove();
+                    canvas.remove();
+                }
+            };
+
+            drawFrame();
+        };
+
+        video.onerror = () => {
+            reject(new Error('Failed to load video for compression'));
+        };
+
+        video.src = URL.createObjectURL(file);
+    });
+}
+
 // Submit upload
 async function submitUpload() {
     if (!currentFile) {
@@ -580,20 +669,38 @@ async function submitUpload() {
     const submitButton = document.getElementById('submitButton');
     const originalButtonText = submitButton.textContent;
 
-    // Validate file size before starting upload (100MB limit)
-    const maxSizeBytes = 100 * 1024 * 1024; // 100MB
-    if (currentFile.size > maxSizeBytes) {
-        alert(`File is too large. Maximum size is 100MB.\nYour file is ${(currentFile.size / (1024 * 1024)).toFixed(1)}MB.`);
-        return;
-    }
-
     console.log(`Starting upload: ${currentFile.name}, size: ${(currentFile.size / (1024 * 1024)).toFixed(2)}MB`);
 
     submitButton.disabled = true;
-    submitButton.textContent = 'Uploading...';
+    submitButton.textContent = 'Processing...';
 
     try {
         const task = BINGO_TASKS[currentTaskIndex];
+        let fileToUpload = currentFile;
+
+        // Compress video if it's larger than 50MB
+        if (task.type === 'video' && currentFile.size > 50 * 1024 * 1024) {
+            console.log('Video is large, compressing...');
+            submitButton.textContent = 'Compressing video...';
+
+            try {
+                fileToUpload = await compressVideo(currentFile);
+                console.log(`Compressed from ${(currentFile.size / (1024 * 1024)).toFixed(2)}MB to ${(fileToUpload.size / (1024 * 1024)).toFixed(2)}MB`);
+            } catch (compressionError) {
+                console.error('Compression failed:', compressionError);
+                // If compression fails, try uploading original file anyway
+                console.log('Compression failed, attempting to upload original file...');
+            }
+        }
+
+        // Final size check - Supabase default limit is 50MB, but can be configured higher
+        const maxSizeBytes = 200 * 1024 * 1024; // 200MB limit
+        if (fileToUpload.size > maxSizeBytes) {
+            alert(`File is too large even after compression. Maximum size is 200MB.\nYour file is ${(fileToUpload.size / (1024 * 1024)).toFixed(1)}MB.\n\nPlease try recording at a lower quality or use a shorter video.`);
+            return;
+        }
+
+        submitButton.textContent = 'Uploading...';
 
         // Generate unique file name
         const fileExt = currentFile.name.split('.').pop();
@@ -605,7 +712,7 @@ async function submitUpload() {
         const uploadPromise = supabase
             .storage
             .from(STORAGE_BUCKET)
-            .upload(fileName, currentFile, {
+            .upload(fileName, fileToUpload, {
                 cacheControl: '3600',
                 upsert: false
             });
