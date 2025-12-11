@@ -358,16 +358,15 @@ function buildNewSubmissionContent(task, index) {
         // Photo or video upload
         const acceptType = task.type === 'photo' ? 'image/*' : 'video/*';
         const fileIcon = task.type === 'photo' ? '📷' : '🎥';
-        const captureAttr = task.type === 'video' ? 'capture="environment"' : '';
 
         content += `
             <div class="upload-section" id="uploadSection" onclick="document.getElementById('fileInput').click()">
                 <div id="uploadPrompt">
                     <div style="font-size: 3em; margin-bottom: 15px;">${fileIcon}</div>
                     <p>Tap to ${task.type === 'video' ? 'record or upload' : 'take or upload'} a ${task.type}</p>
-                    <input type="file" id="fileInput" accept="${acceptType}" ${captureAttr} onchange="handleFileSelect(event)" style="position: absolute; left: -9999px;">
+                    <input type="file" id="fileInput" accept="${acceptType}" onchange="handleFileSelect(event)" style="position: absolute; left: -9999px;">
                     <button type="button" class="upload-button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
-                        ${task.type === 'video' ? '🎥 Record/Upload Video' : '📷 Take/Upload Photo'}
+                        ${task.type === 'video' ? '🎥 Choose/Record Video' : '📷 Choose/Take Photo'}
                     </button>
                 </div>
                 <div id="filePreview" style="display: none;">
