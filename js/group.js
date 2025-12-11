@@ -288,6 +288,30 @@ function renderLeaderboard(users, groupName) {
 
     leaderboardHTML += '</div>';
 
+    // Add all players section
+    leaderboardHTML += `
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e9ecef;">
+            <h2>👥 All Players</h2>
+            <div class="all-players-grid" style="margin-top: 20px;">
+    `;
+
+    // Show all users alphabetically
+    const allUsersSorted = [...users].sort((a, b) => a.username.localeCompare(b.username));
+
+    allUsersSorted.forEach((user) => {
+        leaderboardHTML += `
+            <div class="player-card" onclick="goToUserView('${groupName}', '${escapeHtml(user.username)}')">
+                <div class="player-name">${escapeHtml(user.username)}</div>
+                <div class="player-score">${user.score} / 25</div>
+            </div>
+        `;
+    });
+
+    leaderboardHTML += `
+            </div>
+        </div>
+    `;
+
     // Add activity feed section
     leaderboardHTML += `
         <div class="activity-feed-section">

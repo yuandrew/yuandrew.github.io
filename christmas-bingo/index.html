@@ -390,6 +390,47 @@
             margin-bottom: 15px;
         }
 
+        /* All Players Section */
+        .all-players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .player-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-card:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .player-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
         /* Mobile responsive for activity feed */
         @media (max-width: 768px) {
             .activity-feed-section {
@@ -421,6 +462,14 @@
                 top: 10px;
                 right: 15px;
             }
+
+            .all-players-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .player-card {
+                padding: 12px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -446,6 +495,15 @@
             .activity-task-number {
                 font-size: 0.75em;
                 padding: 1px 4px;
+            }
+
+            .player-name {
+                font-size: 0.9em;
+            }
+
+            .player-score {
+                font-size: 0.8em;
+                padding: 3px 8px;
             }
         }
     </style>
