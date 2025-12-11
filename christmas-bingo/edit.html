@@ -475,7 +475,7 @@
 
         @media (max-width: 768px) {
             body {
-                padding: 10px;
+                padding: 0;
             }
 
             .page-container {
@@ -485,22 +485,23 @@
             .header {
                 padding: 20px;
                 margin-bottom: 15px;
+                border-radius: 0;
             }
 
             .content {
-                padding: 15px;
+                padding: 10px;
+                border-radius: 0;
             }
 
             .bingo-board {
-                gap: 6px;
+                gap: 4px;
             }
 
             .bingo-square {
-                aspect-ratio: auto; /* Remove strict square constraint on mobile */
-                padding: 10px;
+                aspect-ratio: 1; /* Keep squares square on mobile */
+                padding: 8px;
                 font-size: 0.75em;
                 border-width: 2px;
-                min-height: 100px; /* Increased from 80px */
             }
 
             .bingo-square:active {
@@ -582,18 +583,17 @@
         /* Even smaller screens */
         @media (max-width: 480px) {
             .content {
-                padding: 10px;
+                padding: 8px;
             }
 
             .bingo-board {
-                gap: 4px;
+                gap: 3px;
             }
 
             .bingo-square {
-                aspect-ratio: auto; /* Remove strict square constraint */
-                padding: 8px;
-                font-size: 0.7em;
-                min-height: 90px; /* Increased from 70px */
+                aspect-ratio: 1; /* Keep squares square */
+                padding: 6px;
+                font-size: 0.68em;
             }
 
             .square-content {
