@@ -360,26 +360,26 @@ function buildNewSubmissionContent(task, index) {
         const fileIcon = task.type === 'photo' ? '📷' : '🎥';
 
         content += `
-            <div class="upload-section" id="uploadSection" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-section" id="uploadSection" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('fileInput').click();">
                 <div id="uploadPrompt">
                     <div style="font-size: 3em; margin-bottom: 15px;">${fileIcon}</div>
                     <p>Tap to ${task.type === 'video' ? 'record or upload' : 'take or upload'} a ${task.type}</p>
                     <input type="file" id="fileInput" accept="${acceptType}" onchange="handleFileSelect(event)" style="position: absolute; left: -9999px;">
-                    <button type="button" class="upload-button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
+                    <button type="button" class="upload-button" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('fileInput').click();">
                         ${task.type === 'video' ? '🎥 Choose/Record Video' : '📷 Choose/Take Photo'}
                     </button>
                 </div>
                 <div id="filePreview" style="display: none;">
                     <div id="previewContainer"></div>
                     <p id="fileName" style="margin-top: 15px; font-weight: bold;"></p>
-                    <button class="btn-secondary" onclick="clearFileSelection()" style="margin-top: 10px;">
+                    <button type="button" class="btn-secondary" onclick="event.preventDefault(); clearFileSelection()" style="margin-top: 10px;">
                         Choose Different File
                     </button>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                <button class="btn-primary" id="submitButton" onclick="submitUpload()" disabled>
+                <button type="button" class="btn-secondary" onclick="event.preventDefault(); closeTaskModal()">Cancel</button>
+                <button type="button" class="btn-primary" id="submitButton" onclick="event.preventDefault(); submitUpload()" disabled>
                     Upload & Submit
                 </button>
             </div>
@@ -391,6 +391,9 @@ function buildNewSubmissionContent(task, index) {
 
 // Handle file selection
 function handleFileSelect(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     const file = event.target.files[0];
     if (!file) return;
 
@@ -575,11 +578,15 @@ async function compressVideo(file) {
     return new Promise((resolve, reject) => {
         const video = document.createElement('video');
         video.preload = 'metadata';
+        video.muted = true; // Mute to allow autoplay
+        video.playsInline = true; // Important for iOS Safari
+        video.style.display = 'none'; // Hide completely
+        video.style.position = 'absolute';
+        video.style.left = '-9999px';
+        video.controls = false;
+        video.autoplay = false;
 
         video.onloadedmetadata = function() {
-            // Revoke the object URL after loading metadata
-            URL.revokeObjectURL(video.src);
-
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
@@ -604,11 +611,32 @@ async function compressVideo(file) {
             canvas.width = width;
             canvas.height = height;
 
+            // Check if MediaRecorder is supported
+            if (!window.MediaRecorder) {
+                reject(new Error('Video compression not supported on this browser'));
+                return;
+            }
+
+            // Try different codecs for better compatibility
+            let mimeType = 'video/webm;codecs=vp8';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm';
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = 'video/mp4';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        reject(new Error('No supported video codec found'));
+                        return;
+                    }
+                }
+            }
+
+            console.log('Using codec:', mimeType);
+
             // Set up MediaRecorder to compress the video
             const stream = canvas.captureStream(30); // 30 FPS
             const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'video/webm;codecs=vp8',
-                videoBitsPerSecond: 1000000 // 1 Mbps - good balance of quality and size
+                mimeType: mimeType,
+                videoBitsPerSecond: 1000000 // 1 Mbps
             });
 
             const chunks = [];
@@ -619,39 +647,59 @@ async function compressVideo(file) {
             };
 
             mediaRecorder.onstop = () => {
-                const compressedBlob = new Blob(chunks, { type: 'video/webm' });
-                const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, '.webm'), {
-                    type: 'video/webm',
+                const extension = mimeType.includes('webm') ? 'webm' : 'mp4';
+                const compressedBlob = new Blob(chunks, { type: mimeType });
+                const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, `.${extension}`), {
+                    type: mimeType,
                     lastModified: Date.now()
                 });
+
+                // Clean up
+                URL.revokeObjectURL(video.src);
+                video.remove();
+                canvas.remove();
+
                 resolve(compressedFile);
             };
 
             mediaRecorder.onerror = (error) => {
+                console.error('MediaRecorder error:', error);
+                URL.revokeObjectURL(video.src);
                 reject(error);
             };
 
             // Play the video and draw frames to canvas
             video.currentTime = 0;
-            video.play();
 
-            mediaRecorder.start();
+            // Prevent any video events from causing page issues
+            video.addEventListener('play', (e) => e.stopPropagation());
+            video.addEventListener('pause', (e) => e.stopPropagation());
+            video.addEventListener('ended', (e) => e.stopPropagation());
+            video.addEventListener('loadstart', (e) => e.stopPropagation());
 
-            const drawFrame = () => {
-                if (!video.paused && !video.ended) {
-                    ctx.drawImage(video, 0, 0, width, height);
-                    requestAnimationFrame(drawFrame);
-                } else if (video.ended) {
-                    mediaRecorder.stop();
-                    video.remove();
-                    canvas.remove();
-                }
-            };
+            video.play().then(() => {
+                mediaRecorder.start();
 
-            drawFrame();
+                const drawFrame = () => {
+                    if (!video.paused && !video.ended) {
+                        ctx.drawImage(video, 0, 0, width, height);
+                        requestAnimationFrame(drawFrame);
+                    } else if (video.ended) {
+                        mediaRecorder.stop();
+                    }
+                };
+
+                drawFrame();
+            }).catch(err => {
+                console.error('Video play error:', err);
+                URL.revokeObjectURL(video.src);
+                video.remove();
+                reject(new Error('Failed to play video for compression'));
+            });
         };
 
-        video.onerror = () => {
+        video.onerror = (err) => {
+            console.error('Video load error:', err);
             reject(new Error('Failed to load video for compression'));
         };
 
@@ -678,9 +726,9 @@ async function submitUpload() {
         const task = BINGO_TASKS[currentTaskIndex];
         let fileToUpload = currentFile;
 
-        // Compress video if it's larger than 50MB
+        // Always compress video if it's larger than 50MB
         if (task.type === 'video' && currentFile.size > 50 * 1024 * 1024) {
-            console.log('Video is large, compressing...');
+            console.log(`Video is large (${(currentFile.size / (1024 * 1024)).toFixed(1)}MB), compressing...`);
             submitButton.textContent = 'Compressing video...';
 
             try {
@@ -688,8 +736,9 @@ async function submitUpload() {
                 console.log(`Compressed from ${(currentFile.size / (1024 * 1024)).toFixed(2)}MB to ${(fileToUpload.size / (1024 * 1024)).toFixed(2)}MB`);
             } catch (compressionError) {
                 console.error('Compression failed:', compressionError);
-                // If compression fails, try uploading original file anyway
-                console.log('Compression failed, attempting to upload original file...');
+                // If compression fails, use original file
+                console.log('Compression failed, uploading original file...');
+                fileToUpload = currentFile;
             }
         }
 
