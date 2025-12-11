@@ -360,26 +360,26 @@ function buildNewSubmissionContent(task, index) {
         const fileIcon = task.type === 'photo' ? '📷' : '🎥';
 
         content += `
-            <div class="upload-section" id="uploadSection" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('fileInput').click();">
+            <div class="upload-section" id="uploadSection" onclick="document.getElementById('fileInput').click();">
                 <div id="uploadPrompt">
                     <div style="font-size: 3em; margin-bottom: 15px;">${fileIcon}</div>
                     <p>Tap to ${task.type === 'video' ? 'record or upload' : 'take or upload'} a ${task.type}</p>
                     <input type="file" id="fileInput" accept="${acceptType}" onchange="handleFileSelect(event)" style="position: absolute; left: -9999px;">
-                    <button type="button" class="upload-button" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('fileInput').click();">
+                    <button type="button" class="upload-button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
                         ${task.type === 'video' ? '🎥 Choose/Record Video' : '📷 Choose/Take Photo'}
                     </button>
                 </div>
                 <div id="filePreview" style="display: none;">
                     <div id="previewContainer"></div>
                     <p id="fileName" style="margin-top: 15px; font-weight: bold;"></p>
-                    <button type="button" class="btn-secondary" onclick="event.preventDefault(); clearFileSelection()" style="margin-top: 10px;">
+                    <button type="button" class="btn-secondary" onclick="clearFileSelection()" style="margin-top: 10px;">
                         Choose Different File
                     </button>
                 </div>
             </div>
             <div class="modal-actions">
-                <button type="button" class="btn-secondary" onclick="event.preventDefault(); closeTaskModal()">Cancel</button>
-                <button type="button" class="btn-primary" id="submitButton" onclick="event.preventDefault(); submitUpload()" disabled>
+                <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button type="button" class="btn-primary" id="submitButton" onclick="submitUpload()" disabled>
                     Upload & Submit
                 </button>
             </div>
@@ -391,9 +391,6 @@ function buildNewSubmissionContent(task, index) {
 
 // Handle file selection
 function handleFileSelect(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
     const file = event.target.files[0];
     if (!file) return;
 
