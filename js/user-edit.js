@@ -398,14 +398,27 @@ function buildNewSubmissionContent(task, index) {
         const fileIcon = task.type === 'photo' ? '📷' : '🎥';
 
         content += `
-            <div class="upload-section" id="uploadSection" onclick="document.getElementById('fileInput').click();">
+            <div class="upload-section" id="uploadSection">
                 <div id="uploadPrompt">
                     <div style="font-size: 3em; margin-bottom: 15px;">${fileIcon}</div>
-                    <p>Tap to ${task.type === 'video' ? 'record or upload' : 'take or upload'} a ${task.type}</p>
-                    <input type="file" id="fileInput" accept="${acceptType}" onchange="handleFileSelect(event)" style="position: absolute; left: -9999px;">
-                    <button type="button" class="upload-button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
-                        ${task.type === 'video' ? '🎥 Choose/Record Video' : '📷 Choose/Take Photo'}
-                    </button>
+
+                    <div style="margin-bottom: 20px;">
+                        <button type="button" class="upload-button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
+                            ${task.type === 'video' ? '🎥 Upload Video (< 50MB)' : '📷 Upload Photo'}
+                        </button>
+                        <input type="file" id="fileInput" accept="${acceptType}" onchange="handleFileSelect(event)" style="position: absolute; left: -9999px;">
+                    </div>
+
+                    ${task.type === 'video' ? `
+                    <div style="margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                        <div style="font-weight: bold; margin-bottom: 10px;">Or paste a video link:</div>
+                        <input type="text" id="videoLinkInput" placeholder="Google Drive, Dropbox, YouTube, etc."
+                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                        <div style="font-size: 0.85em; color: #666; margin-top: 8px;">
+                            📝 Tip: Upload large videos to Google Drive or Dropbox and paste the shareable link here
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
                 <div id="filePreview" style="display: none;">
                     <div id="previewContainer"></div>
@@ -757,6 +770,73 @@ async function compressVideo(file) {
     });
 }
 
+// Submit video link (alternative to file upload for large videos)
+async function submitVideoLink(videoUrl) {
+    const submitButton = document.getElementById('submitButton');
+    if (!submitButton) return;
+
+    const originalButtonText = submitButton.textContent;
+
+    try {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+
+        showDebugMessage(`Submitting link: ${videoUrl}`);
+
+        const task = BINGO_TASKS[currentTaskIndex];
+
+        // Insert submission directly with the video URL
+        const submissionData = {
+            user_id: currentUser.id,
+            square_index: currentTaskIndex,
+            square_text: task.text,
+            submission_type: task.type,
+            file_url: videoUrl, // Store the link directly
+            is_challenge: task.isChallenge,
+            approval_status: task.isChallenge ? 'pending' : 'approved'
+        };
+
+        showDebugMessage('Saving to database...');
+
+        const { data, error } = await supabase
+            .from('bingo_submissions')
+            .insert([submissionData])
+            .select();
+
+        if (error) {
+            showDebugMessage(`Database error: ${error.message}`);
+            throw error;
+        }
+
+        showDebugMessage('Link submitted successfully!');
+
+        // Clear upload state
+        localStorage.removeItem('bingo_upload_state');
+
+        // Reload submissions and update UI
+        await loadSubmissions();
+        renderBingoBoard();
+        updateProgress();
+        closeTaskModal();
+        currentFile = null;
+
+        if (task.isChallenge) {
+            alert('Challenge submission received! It will appear on your board once the admin approves it.');
+        } else {
+            alert('Video link submitted successfully!');
+        }
+    } catch (error) {
+        console.error('Error submitting video link:', error);
+        showDebugMessage(`ERROR: ${error.message}`);
+        alert(`Failed to submit: ${error.message}`);
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        }
+    }
+}
+
 // Handle submit upload button click (wrapper to prevent modal closing issues)
 function handleSubmitUpload() {
     console.log('handleSubmitUpload called');
@@ -781,9 +861,20 @@ function handleSubmitUpload() {
 async function submitUpload() {
     showDebugMessage('submitUpload started');
 
-    if (!currentFile) {
-        showDebugMessage('ERROR: No file selected');
-        alert('Please select a file first.');
+    // Check if user provided a video link instead
+    const videoLinkInput = document.getElementById('videoLinkInput');
+    const hasLink = videoLinkInput && videoLinkInput.value.trim();
+
+    if (!currentFile && !hasLink) {
+        showDebugMessage('ERROR: No file or link provided');
+        alert('Please select a file or paste a video link.');
+        return;
+    }
+
+    // If user provided a link, submit that instead
+    if (hasLink && !currentFile) {
+        showDebugMessage('Submitting video link instead of upload');
+        await submitVideoLink(videoLinkInput.value.trim());
         return;
     }
 
