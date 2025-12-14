@@ -911,7 +911,7 @@ async function submitUpload() {
             } else if (error.message.includes('policy') || error.message.includes('permission')) {
                 errorMessage = 'Permission denied. Please contact the administrator.';
             } else if (error.message.includes('size') || error.message.includes('payload')) {
-                errorMessage = 'File is too large. Please try a smaller file or compress your video.';
+                errorMessage = `File is too large for Supabase storage. Actual error: ${error.message}\n\nYou need to increase the file size limit in your Supabase project settings.`;
             } else if (error.message.includes('network') || error.message.includes('fetch')) {
                 errorMessage = 'Network error. Please check your internet connection and try again.';
             } else {
