@@ -490,16 +490,19 @@
             }
 
             .content {
-                padding: 5px;
+                padding: 0;
                 border-radius: 0;
                 overflow-x: auto;
                 overflow-y: visible;
+                -webkit-overflow-scrolling: touch;
             }
 
             .bingo-board {
                 gap: 5px;
                 min-width: max-content;
                 width: fit-content;
+                margin: 0;
+                padding: 5px;
             }
 
             .bingo-square {
@@ -596,11 +599,12 @@
         /* Even smaller screens */
         @media (max-width: 480px) {
             .content {
-                padding: 3px;
+                padding: 0;
             }
 
             .bingo-board {
                 gap: 4px;
+                padding: 3px;
             }
 
             .bingo-square {
