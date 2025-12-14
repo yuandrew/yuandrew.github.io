@@ -719,24 +719,23 @@ async function submitUpload() {
     submitButton.disabled = true;
     submitButton.textContent = 'Processing...';
 
+    // Save state in case of page refresh
+    const uploadState = {
+        taskIndex: currentTaskIndex,
+        fileName: currentFile.name,
+        fileSize: currentFile.size,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('bingo_upload_state', JSON.stringify(uploadState));
+
     try {
         const task = BINGO_TASKS[currentTaskIndex];
         let fileToUpload = currentFile;
 
-        // Always compress video if it's larger than 50MB
+        // For large videos, just upload directly to avoid browser crashes
+        // Compression on mobile browsers can cause memory issues
         if (task.type === 'video' && currentFile.size > 50 * 1024 * 1024) {
-            console.log(`Video is large (${(currentFile.size / (1024 * 1024)).toFixed(1)}MB), compressing...`);
-            submitButton.textContent = 'Compressing video...';
-
-            try {
-                fileToUpload = await compressVideo(currentFile);
-                console.log(`Compressed from ${(currentFile.size / (1024 * 1024)).toFixed(2)}MB to ${(fileToUpload.size / (1024 * 1024)).toFixed(2)}MB`);
-            } catch (compressionError) {
-                console.error('Compression failed:', compressionError);
-                // If compression fails, use original file
-                console.log('Compression failed, uploading original file...');
-                fileToUpload = currentFile;
-            }
+            console.log(`Video is large (${(currentFile.size / (1024 * 1024)).toFixed(1)}MB) - uploading without compression`);
         }
 
         // Final size check - Supabase default limit is 50MB, but can be configured higher
@@ -809,6 +808,9 @@ async function submitUpload() {
         }
 
         console.log('Submission saved successfully!');
+
+        // Clear upload state
+        localStorage.removeItem('bingo_upload_state');
 
         // Reload submissions and update UI
         await loadSubmissions();
