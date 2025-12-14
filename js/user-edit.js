@@ -434,6 +434,8 @@ function handleFileSelect(event) {
 
     currentFile = file;
 
+    showDebugMessage(`File selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
+
     // Show preview
     const uploadPrompt = document.getElementById('uploadPrompt');
     const filePreview = document.getElementById('filePreview');
@@ -443,19 +445,32 @@ function handleFileSelect(event) {
 
     uploadPrompt.style.display = 'none';
     filePreview.style.display = 'block';
-    fileName.textContent = file.name;
+    fileName.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)`;
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const task = BINGO_TASKS[currentTaskIndex];
-        if (task.type === 'photo') {
-            previewContainer.innerHTML = `<img src="${e.target.result}" class="preview-media">`;
-        } else if (task.type === 'video') {
-            previewContainer.innerHTML = `<video src="${e.target.result}" class="preview-media" controls></video>`;
-        }
-    };
-    reader.readAsDataURL(file);
+    // Skip preview for large files (> 50MB) to avoid crashing mobile browsers
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 50) {
+        showDebugMessage('Skipping preview for large file to save memory');
+        previewContainer.innerHTML = `
+            <div style="padding: 40px; text-align: center; background: #f5f5f5; border-radius: 8px;">
+                <div style="font-size: 3em; margin-bottom: 10px;">📹</div>
+                <div style="color: #666;">Large video selected</div>
+                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">Preview disabled to save memory</div>
+            </div>
+        `;
+    } else {
+        // Create preview for smaller files only
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const task = BINGO_TASKS[currentTaskIndex];
+            if (task.type === 'photo') {
+                previewContainer.innerHTML = `<img src="${e.target.result}" class="preview-media">`;
+            } else if (task.type === 'video') {
+                previewContainer.innerHTML = `<video src="${e.target.result}" class="preview-media" controls></video>`;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
 
     // Enable submit button
     submitButton.disabled = false;
