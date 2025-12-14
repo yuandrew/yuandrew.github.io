@@ -476,17 +476,22 @@
         @media (max-width: 768px) {
             body {
                 padding: 0;
-                overflow-x: hidden;
+                overflow-x: auto;
+                overflow-y: auto;
             }
 
             .page-container {
                 margin: 0;
+                max-width: none;
+                width: 100%;
             }
 
             .header {
                 padding: 15px;
                 margin-bottom: 10px;
                 border-radius: 0;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .content {
@@ -495,6 +500,8 @@
                 overflow-x: auto;
                 overflow-y: visible;
                 -webkit-overflow-scrolling: touch;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .bingo-board {
