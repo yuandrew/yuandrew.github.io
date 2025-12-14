@@ -9,6 +9,44 @@ try {
     alert('Configuration error. Please contact the administrator.');
 }
 
+// Global error handler for debugging
+window.addEventListener('error', function(event) {
+    console.error('Global error caught:', event.error);
+    console.error('Error message:', event.message);
+    console.error('Error at:', event.filename, event.lineno, event.colno);
+
+    // Show error on screen for mobile debugging
+    showDebugMessage(`ERROR: ${event.message} at line ${event.lineno}`);
+});
+
+// Debug message display for mobile
+function showDebugMessage(message) {
+    // Create or get debug div
+    let debugDiv = document.getElementById('debugMessages');
+    if (!debugDiv) {
+        debugDiv = document.createElement('div');
+        debugDiv.id = 'debugMessages';
+        debugDiv.style.position = 'fixed';
+        debugDiv.style.bottom = '10px';
+        debugDiv.style.left = '10px';
+        debugDiv.style.right = '10px';
+        debugDiv.style.background = 'rgba(0, 0, 0, 0.9)';
+        debugDiv.style.color = '#0f0';
+        debugDiv.style.padding = '10px';
+        debugDiv.style.fontFamily = 'monospace';
+        debugDiv.style.fontSize = '11px';
+        debugDiv.style.maxHeight = '200px';
+        debugDiv.style.overflow = 'auto';
+        debugDiv.style.zIndex = '10000';
+        debugDiv.style.borderRadius = '5px';
+        document.body.appendChild(debugDiv);
+    }
+
+    const timestamp = new Date().toLocaleTimeString();
+    debugDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+    debugDiv.scrollTop = debugDiv.scrollHeight;
+}
+
 // Define the 25 bingo tasks
 const BINGO_TASKS = [
     { text: "send a picture with you family", type: "photo", isChallenge: false },
@@ -379,7 +417,7 @@ function buildNewSubmissionContent(task, index) {
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                <button type="button" class="btn-primary" id="submitButton" onclick="submitUpload()" disabled>
+                <button type="button" class="btn-primary" id="submitButton" onclick="handleSubmitUpload()" disabled>
                     Upload & Submit
                 </button>
             </div>
@@ -704,17 +742,46 @@ async function compressVideo(file) {
     });
 }
 
+// Handle submit upload button click (wrapper to prevent modal closing issues)
+function handleSubmitUpload() {
+    console.log('handleSubmitUpload called');
+    showDebugMessage('Upload button clicked');
+
+    // Call the async function and catch any errors
+    submitUpload().catch(error => {
+        console.error('Uncaught error in submitUpload:', error);
+        showDebugMessage(`ERROR in submitUpload: ${error.message}`);
+        alert('An unexpected error occurred: ' + error.message);
+
+        // Try to reset button state
+        const submitButton = document.getElementById('submitButton');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Upload & Submit';
+        }
+    });
+}
+
 // Submit upload
 async function submitUpload() {
+    showDebugMessage('submitUpload started');
+
     if (!currentFile) {
+        showDebugMessage('ERROR: No file selected');
         alert('Please select a file first.');
         return;
     }
 
     const submitButton = document.getElementById('submitButton');
-    const originalButtonText = submitButton.textContent;
+    if (!submitButton) {
+        showDebugMessage('ERROR: Submit button not found');
+        return;
+    }
 
-    console.log(`Starting upload: ${currentFile.name}, size: ${(currentFile.size / (1024 * 1024)).toFixed(2)}MB`);
+    const originalButtonText = submitButton.textContent;
+    const fileSize = (currentFile.size / (1024 * 1024)).toFixed(2);
+
+    showDebugMessage(`File: ${currentFile.name}, Size: ${fileSize}MB`);
 
     submitButton.disabled = true;
     submitButton.textContent = 'Processing...';
@@ -732,26 +799,14 @@ async function submitUpload() {
         const task = BINGO_TASKS[currentTaskIndex];
         let fileToUpload = currentFile;
 
-        // For large videos, just upload directly to avoid browser crashes
-        // Compression on mobile browsers can cause memory issues
-        if (task.type === 'video' && currentFile.size > 50 * 1024 * 1024) {
-            console.log(`Video is large (${(currentFile.size / (1024 * 1024)).toFixed(1)}MB) - uploading without compression`);
-        }
-
-        // Final size check - Supabase default limit is 50MB, but can be configured higher
-        const maxSizeBytes = 200 * 1024 * 1024; // 200MB limit
-        if (fileToUpload.size > maxSizeBytes) {
-            alert(`File is too large even after compression. Maximum size is 200MB.\nYour file is ${(fileToUpload.size / (1024 * 1024)).toFixed(1)}MB.\n\nPlease try recording at a lower quality or use a shorter video.`);
-            return;
-        }
-
+        showDebugMessage('Starting upload process...');
         submitButton.textContent = 'Uploading...';
 
         // Generate unique file name
         const fileExt = currentFile.name.split('.').pop();
         const fileName = `${currentGroupName}/${currentUsername}/${currentTaskIndex}_${Date.now()}.${fileExt}`;
 
-        console.log('Uploading to storage:', fileName);
+        showDebugMessage(`Uploading to: ${fileName}`);
 
         // Create upload promise
         const uploadPromise = supabase
@@ -767,15 +822,17 @@ async function submitUpload() {
             setTimeout(() => reject(new Error('Upload timed out after 90 seconds. Please check your internet connection and try again.')), 90000);
         });
 
+        showDebugMessage('Waiting for upload...');
+
         // Race between upload and timeout
         const { data: uploadData, error: uploadError } = await Promise.race([uploadPromise, timeoutPromise]);
 
         if (uploadError) {
-            console.error('Upload error:', uploadError);
+            showDebugMessage(`Upload error: ${uploadError.message}`);
             throw uploadError;
         }
 
-        console.log('Upload successful, getting public URL...');
+        showDebugMessage('Upload complete! Getting URL...');
 
         // Get public URL
         const { data: urlData } = supabase
