@@ -476,6 +476,7 @@
         @media (max-width: 768px) {
             body {
                 padding: 0;
+                overflow-x: hidden;
             }
 
             .page-container {
@@ -491,16 +492,22 @@
             .content {
                 padding: 5px;
                 border-radius: 0;
+                overflow-x: auto;
+                overflow-y: visible;
             }
 
             .bingo-board {
-                gap: 3px;
+                gap: 5px;
+                min-width: max-content;
+                width: fit-content;
             }
 
             .bingo-square {
                 aspect-ratio: 1;
-                padding: 6px;
-                font-size: 0.7em;
+                width: 140px;
+                height: 140px;
+                padding: 10px;
+                font-size: 0.8em;
                 border-width: 2px;
                 overflow: hidden;
                 display: flex;
@@ -514,23 +521,20 @@
             }
 
             .square-content {
-                font-size: 0.75em;
-                line-height: 1.2;
+                font-size: 0.85em;
+                line-height: 1.3;
                 overflow: hidden;
-                text-overflow: ellipsis;
-                display: -webkit-box;
-                -webkit-line-clamp: 5;
-                -webkit-box-orient: vertical;
+                word-wrap: break-word;
             }
 
             .square-number {
-                font-size: 0.6em;
-                padding: 1px 3px;
+                font-size: 0.7em;
+                padding: 2px 4px;
             }
 
             .challenge-badge {
-                font-size: 0.5em;
-                padding: 1px 3px;
+                font-size: 0.6em;
+                padding: 2px 4px;
             }
 
             .modal-overlay {
@@ -596,33 +600,34 @@
             }
 
             .bingo-board {
-                gap: 2px;
+                gap: 4px;
             }
 
             .bingo-square {
                 aspect-ratio: 1;
-                padding: 4px;
-                font-size: 0.65em;
+                width: 120px;
+                height: 120px;
+                padding: 8px;
+                font-size: 0.75em;
             }
 
             .square-content {
-                font-size: 0.7em;
-                line-height: 1.15;
-                -webkit-line-clamp: 4;
+                font-size: 0.8em;
+                line-height: 1.25;
             }
 
             .square-number {
-                font-size: 0.55em;
-                padding: 1px 2px;
+                font-size: 0.65em;
+                padding: 1px 3px;
             }
 
             .challenge-badge {
-                font-size: 0.45em;
+                font-size: 0.55em;
             }
 
             .bingo-square.completed::before,
             .bingo-square.pending::before {
-                font-size: 3.5em;
+                font-size: 3em;
             }
         }
     </style>
