@@ -417,7 +417,7 @@ function buildNewSubmissionContent(task, index) {
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                <button type="button" class="btn-primary" id="submitButton" onclick="handleSubmitUpload()" disabled>
+                <button type="button" class="btn-primary" id="submitButton" onclick="event.stopPropagation(); handleSubmitUpload();" disabled>
                     Upload & Submit
                 </button>
             </div>
