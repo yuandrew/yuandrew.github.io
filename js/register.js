@@ -1,13 +1,9 @@
 // Registration logic for Christmas Bingo
 
 // Initialize Supabase client
-if (typeof supabase === 'undefined') {
-    var supabase;
-}
+var supabase;
 try {
-    if (!supabase) {
-        supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-    }
+    supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 } catch (error) {
     console.error('Failed to initialize Supabase:', error);
     showError('Configuration error. Please contact the administrator.');
