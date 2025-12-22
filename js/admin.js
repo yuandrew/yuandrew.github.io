@@ -1,9 +1,13 @@
 // Admin panel logic for Christmas Bingo
 
 // Initialize Supabase client
-let supabase;
+if (typeof supabase === 'undefined') {
+    var supabase;
+}
 try {
-    supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    if (!supabase) {
+        supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    }
 } catch (error) {
     console.error('Failed to initialize Supabase:', error);
     alert('Configuration error. Please contact the administrator.');
