@@ -133,6 +133,13 @@ h2 {
     line-height: 1.65;
 }
 
+.intro a {
+    color: #d9ffe6;
+    font-weight: 900;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .18em;
+}
+
 .hero-actions {
     display: flex;
     flex-wrap: wrap;
@@ -196,6 +203,12 @@ h2 {
 .detail-list strong {
     color: #263041;
     font-size: .98rem;
+}
+
+.detail-list a {
+    color: var(--green-dark);
+    text-decoration-thickness: 2px;
+    text-underline-offset: .18em;
 }
 
 .fundraiser-form {
