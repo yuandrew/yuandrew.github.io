@@ -464,19 +464,6 @@ tbody tr:hover td {
     text-align: center;
 }
 
-.site-footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem 2rem;
-    padding: 2rem clamp(1rem, 4vw, 3.5rem);
-    background: #111827;
-    color: #fff;
-}
-
-.site-footer a {
-    font-weight: 800;
-}
-
 @media (max-width: 54rem) {
     .site-header {
         position: static;
