@@ -45,18 +45,18 @@
             return;
         }
 
-        donorSummary.textContent = `${donors.length} committed donor${donors.length === 1 ? '' : 's'}`;
+        donorSummary.textContent = `${donors.length} donor pledge${donors.length === 1 ? '' : 's'}`;
 
         donors.forEach((donor) => {
             const row = document.createElement('tr');
             row.appendChild(createCell(donor.display_name || 'Anonymous'));
-            row.appendChild(createCell(formatCommitment(donor)));
+            row.appendChild(createCell(formatPledge(donor)));
             tableBody.appendChild(row);
         });
     }
 
     function renderEmptyState() {
-        donorSummary.textContent = 'No public commitments yet';
+        donorSummary.textContent = 'No public pledges yet';
         tableBody.textContent = '';
 
         const row = document.createElement('tr');
@@ -74,7 +74,7 @@
         return cell;
     }
 
-    function formatCommitment(donor) {
+    function formatPledge(donor) {
         const amount = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD'

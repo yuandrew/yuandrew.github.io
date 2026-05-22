@@ -85,7 +85,7 @@
         }
 
         if (!['total', 'per_unit'].includes(values.donationType)) {
-            showError('Please choose a donation commitment type.');
+            showError('Please choose a donation pledge type.');
             return false;
         }
 
