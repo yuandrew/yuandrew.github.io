@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Walkathon Fundraiser</title>
+    <title>Cheeseburger Beer Mile Fundraiser</title>
     <link href="/css/fundraiser.css" rel="stylesheet" type="text/css">
 </head>
 
@@ -22,9 +22,13 @@
 <main>
     <section class="fundraiser-hero">
         <div class="hero-content">
-            <p class="eyebrow">Walkathon fundraiser</p>
+            <p class="eyebrow">Cheeseburger Beer Mile Fundraiser</p>
             <h1>Commit to donate</h1>
             <p class="intro">Sign up with either a total pledge or an amount tied to the final beer + mile + burger count. I will use your email only to send the final result and donation follow-up.</p>
+            <div class="hero-actions">
+                <a class="button" href="#signup-heading">Make a pledge</a>
+                <a class="button button-secondary" href="/fundraiser/donor-list/">See donors</a>
+            </div>
         </div>
     </section>
 
@@ -33,7 +37,20 @@
             <div class="form-copy">
                 <h2 id="signup-heading">Signup sheet</h2>
                 <p>Your name can be hidden from the public donor list. Emails are stored privately and are not shown on the website.</p>
-                <a class="text-link" href="/fundraiser/donor-list/">View donor list</a>
+                <div class="detail-list" aria-label="Fundraiser details">
+                    <div>
+                        <span>Privacy</span>
+                        <strong>Email stays private</strong>
+                    </div>
+                    <div>
+                        <span>Options</span>
+                        <strong>Total or per-count pledge</strong>
+                    </div>
+                    <div>
+                        <span>Follow-up</span>
+                        <strong>Final count by email</strong>
+                    </div>
+                </div>
             </div>
 
             <form id="fundraiserForm" class="fundraiser-form">
@@ -74,7 +91,7 @@
                     <label for="paymentMethod">Donation method</label>
                     <select id="paymentMethod" name="paymentMethod" required>
                         <option value="">Select one</option>
-                        <option value="venmo">I will Venmo you</option>
+                        <option value="venmo">I will Venmo you (venmo account will be sent in email with final count)</option>
                         <option value="self_donate">I will donate myself (tax deductible if you do it yourself)</option>
                     </select>
                 </div>

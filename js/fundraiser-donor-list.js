@@ -20,7 +20,7 @@
     try {
         const { data, error } = await supabaseClient
             .from('fundraiser_public_donors')
-            .select('display_name, donation_type, amount, payment_method, created_at')
+            .select('display_name, donation_type, amount, created_at')
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -51,7 +51,6 @@
             const row = document.createElement('tr');
             row.appendChild(createCell(donor.display_name || 'Anonymous'));
             row.appendChild(createCell(formatCommitment(donor)));
-            row.appendChild(createCell(formatPaymentMethod(donor.payment_method)));
             tableBody.appendChild(row);
         });
     }
@@ -63,7 +62,7 @@
         const row = document.createElement('tr');
         const cell = document.createElement('td');
         cell.className = 'empty-row';
-        cell.colSpan = 3;
+        cell.colSpan = 2;
         cell.textContent = 'No donors have signed up yet.';
         row.appendChild(cell);
         tableBody.appendChild(row);
@@ -86,18 +85,6 @@
         }
 
         return `${amount} total`;
-    }
-
-    function formatPaymentMethod(paymentMethod) {
-        if (paymentMethod === 'venmo') {
-            return 'Venmo Andrew';
-        }
-
-        if (paymentMethod === 'self_donate') {
-            return 'Donate directly';
-        }
-
-        return 'Not specified';
     }
 
     function showError(message) {

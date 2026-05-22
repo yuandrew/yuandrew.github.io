@@ -33,8 +33,7 @@ select
     else name
   end as display_name,
   donation_type,
-  amount,
-  payment_method
+  amount
 from public.fundraiser_donors
 order by created_at desc;
 
