@@ -74,7 +74,7 @@
     function updateAmountLabel() {
         const donationType = document.querySelector('input[name="donationType"]:checked').value;
         amountLabel.textContent = donationType === 'per_unit'
-            ? 'Amount per beer + mile + burger'
+            ? 'Pledge per beer + mile + burger'
             : 'Total donation amount';
     }
 

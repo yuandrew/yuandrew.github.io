@@ -84,7 +84,7 @@ a {
     color: #fff;
     background:
         linear-gradient(90deg, rgba(17, 24, 39, .96), rgba(17, 24, 39, .74) 46%, rgba(17, 24, 39, .26)),
-        url('/img/cleveland.png') center / cover;
+        url('/img/fundraiser-hero.png') center / cover;
 }
 
 .hero-content {
